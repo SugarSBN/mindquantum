@@ -71,8 +71,8 @@ hams
 
 from mindquantum.nn import MindQuantumLayer
 
-pqc = MindQuantumLayer(enc.para_name,
-                       ans.para_name,
+pqc = MindQuantumLayer(enc.params_name,
+                       ans.params_name,
                        enc + ans,
                        hams,
                        n_threads=5)

@@ -15,25 +15,29 @@
 """Test max_cut"""
 
 import os
+
 os.environ['OMP_NUM_THREADS'] = '8'
 import numpy as np
 import mindspore as ms
 from mindquantum.ansatz import MaxCutAnsatz
-from mindquantum.nn import MindQuantumAnsatzOnlyLayer as MAL
+from mindquantum.nn import MQAnsatzOnlyLayer
 from mindquantum.gate import Hamiltonian
+from mindquantum.simulator import Simulator
 
-ms.context.set_context(mode=ms.context.GRAPH_MODE, device_target="CPU")
+ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
 
 
 def test_max_cut():
     graph = [(0, 1), (1, 2), (2, 3), (3, 4), (1, 4)]
     depth = 3
     maxcut = MaxCutAnsatz(graph, depth)
+    sim = Simulator('projectq', maxcut.circuit.n_qubits)
+    ham = maxcut.hamiltonian
+    f_g_ops = sim.get_expectation_with_grad(Hamiltonian(-ham), maxcut.circuit)
     ms.set_seed(42)
-    net = MAL(maxcut.circuit.para_name, maxcut.circuit,
-              Hamiltonian(-maxcut.hamiltonian))
+    net = MQAnsatzOnlyLayer(f_g_ops, len(maxcut.circuit.params_name))
     opti = ms.nn.Adagrad(net.trainable_params(), learning_rate=4e-1)
     train_net = ms.nn.TrainOneStepCell(net, opti)
     for i in range(50):
-        cut = -train_net().asnumpy()[0, 0]
+        cut = -train_net().asnumpy()[0]
     assert np.allclose(round(cut, 3), 4.831)

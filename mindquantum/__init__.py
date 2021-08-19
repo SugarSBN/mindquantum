@@ -26,6 +26,8 @@ from . import parameterresolver
 from . import utils
 from . import hiqfermion
 from . import ansatz
+from . import simulator
+from .simulator import Simulator
 from .circuit import *
 from .gate import *
 from .parameterresolver import *
@@ -37,6 +39,7 @@ __all__ = ['__version__', '__version_info__']
 __all__.extend(circuit.__all__)
 __all__.extend(gate.__all__)
 __all__.extend(parameterresolver.__all__)
+__all__.append("Simulator")
 __all__.sort()
 
 total_num_core = os.cpu_count()

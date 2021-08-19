@@ -14,16 +14,28 @@
 # ============================================================================
 """Quantum neural networks operators and cells."""
 
-from .pqc import generate_pqc_operator, PQC
-from .mindquantum_layer import MindQuantumLayer
-from .evolution import generate_evolution_operator, Evolution
-from .mindquantum_ansatz_only_layer import MindQuantumAnsatzOnlyLayer
-from .mindquantum_ansatz_only_layer import MindQuantumAnsatzOnlyOperator
+from .operations import MQOps
+from .operations import MQN2Ops
+from .operations import MQAnsatzOnlyOps
+from .operations import MQN2AnsatzOnlyOps
+from .operations import MQEncoderOnlyOps
+from .operations import MQN2EncoderOnlyOps
+from .layer import MQLayer
+from .layer import MQN2Layer
+from .layer import MQAnsatzOnlyLayer
+from .layer import MQN2AnsatzOnlyLayer
 
 __all__ = [
-    "generate_pqc_operator", "PQC", "MindQuantumLayer",
-    "generate_evolution_operator", "Evolution", "MindQuantumAnsatzOnlyLayer",
-    "MindQuantumAnsatzOnlyOperator"
+    "MQOps",
+    "MQN2Ops",
+    "MQAnsatzOnlyOps",
+    "MQN2AnsatzOnlyOps",
+    "MQEncoderOnlyOps",
+    "MQN2EncoderOnlyOps",
+    "MQLayer",
+    "MQN2Layer",
+    "MQAnsatzOnlyLayer",
+    "MQN2AnsatzOnlyLayer",
 ]
 
 __all__.sort()

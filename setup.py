@@ -18,7 +18,6 @@ import os
 import stat
 from setuptools import setup
 from setuptools import find_packages
-from setuptools.command.egg_info import egg_info
 from setuptools.command.build_py import build_py
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
@@ -32,7 +31,9 @@ def read_version():
         version_ = f.readlines()[-1].strip().split()[-1][1:-1]
     return version_
 
+
 version = read_version()
+
 
 def update_permissions(path):
     """
@@ -52,14 +53,6 @@ def update_permissions(path):
             os.chmod(file_fullpath, stat.S_IREAD)
 
 
-class EggInfo(egg_info):
-    """Egg info."""
-    def run(self):
-        super().run()
-        egg_info_dir = os.path.join(cur_dir, 'mindquantum.egg-info')
-        update_permissions(egg_info_dir)
-
-
 class BuildPy(build_py):
     """BuildPy."""
     def run(self):
@@ -72,6 +65,7 @@ with open('requirements.txt', 'r') as f_requirements:
     requirements = f_requirements.readlines()
 requirements = [r.strip() for r in requirements]
 
+#TODO: 🔥🔥🔥🔥🔥《项目编译》↪️1.优化编译、打包流程，将项目编译成与编译时的python版本相关的whl包
 setup(name='mindquantum',
       version=version,
       author='The MindSpore Authors',
@@ -82,13 +76,12 @@ setup(name='mindquantum',
           'Sources': 'https://gitee.com/mindspore/mindquantum',
           'Issue Tracker': 'https://gitee.com/mindspore/mindquantum/issues',
       },
-      description=
-      "A hybrid quantum-classic framework for quantum machine learning",
+      description="A hybrid quantum-classic framework for quantum computing",
       license='Apache 2.0',
       packages=find_packages(),
+      package_data={'': ['*.so*']},
       include_package_data=True,
       cmdclass={
-          'egg_info': EggInfo,
           'build_py': BuildPy,
       },
       install_requires=requirements,

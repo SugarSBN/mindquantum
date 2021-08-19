@@ -20,6 +20,13 @@ from abc import abstractmethod
 from collections.abc import Iterable
 import numpy as np
 from mindquantum.parameterresolver import ParameterResolver as PR
+from .. import mqbackend as mb
+
+HERMITIAN_PROPERTIES = {
+    'self_hermitian': 0,  # the hermitian of this gate is its self
+    'do_hermitian': 1,  # just do hermitian when you need hermitian
+    'params_opposite': 2  # use the negative parameters for hermitian
+}
 
 
 class BasicGate():
@@ -28,16 +35,20 @@ class BasicGate():
 
     Args:
         name (str): the name of this gate.
-        isparameter (bool): whether this is a parameterized gate. Default: False.
+        parameterized (bool): whether this is a parameterized gate. Default: False.
     """
-    def __init__(self, name, isparameter=False):
+    def __init__(self, name, parameterized=False):
         if not isinstance(name, str):
             raise TypeError("Excepted string for gate name, get {}".format(
                 type(name)))
         self.name = name
-        self.isparameter = isparameter
+        self.parameterized = parameterized
         self.str = self.name
         self.projectq_gate = None
+        self.obj_qubits = []
+        self.ctrl_qubits = []
+        self.hermitian_property = HERMITIAN_PROPERTIES['self_hermitian']
+        self.daggered = False
 
     @abstractmethod
     def matrix(self, *args):
@@ -138,7 +149,7 @@ class BasicGate():
     def __eq__(self, other):
         _check_gate_type(other)
         if self.name != other.name or \
-                self.isparameter != other.isparameter or \
+                self.parameterized != other.parameterized or \
                 self.obj_qubits != other.obj_qubits or \
                 self.ctrl_qubits != other.ctrl_qubits:
             return False
@@ -175,6 +186,22 @@ class NoneParameterGate(BasicGate):
         self.coeff = None
         self.matrix_value = None
 
+    def get_cpp_obj(self):
+        """Get the cpp obj of this gate."""
+        cpp_gate = mb.get_gate_by_name(self.name)
+        cpp_gate.obj_qubits = self.obj_qubits
+        cpp_gate.ctrl_qubits = self.ctrl_qubits
+        if self.daggered:
+            cpp_gate.daggered = True
+            if self.hermitian_property == HERMITIAN_PROPERTIES["do_hermitian"]:
+                cpp_gate.base_matrix = mb.dim2matrix(self.matrix())
+            if self.hermitian_property == HERMITIAN_PROPERTIES[
+                    "params_opposite"]:
+                raise ValueError(
+                    f"Hermitian properties of None parameterized gate {self} can not be params_opposite"
+                )
+        return cpp_gate
+
     def matrix(self, *args):
         """
         Get the matrix of this none parameterized gate.
@@ -186,7 +213,9 @@ class NoneParameterGate(BasicGate):
         Get hermitian gate of this none parameterized gate.
         """
         hermitian_gate = deepcopy(self)
-        hermitian_gate.matrix_value = np.conj(self.matrix_value.T)
+        hermitian_gate.daggered = not hermitian_gate.daggered
+        if self.hermitian_property == HERMITIAN_PROPERTIES["do_hermitian"]:
+            hermitian_gate.matrix_value = np.conj(self.matrix_value.T)
         return hermitian_gate
 
     def define_projectq_gate(self):
@@ -242,12 +271,12 @@ but get {}".format(type(coeff)))
     def generate_description(self):
         BasicGate.generate_description(self)
         if not hasattr(self, 'obj_qubits'):
-            if self.isparameter:
+            if self.parameterized:
                 self.str = f'{self.name}({self.coeff.expression()})'
             else:
                 self.str = f'{self.name}({round(self.coeff, 3)})'
         else:
-            if self.isparameter:
+            if self.parameterized:
                 self.str = self.str[:len(
                     self.name) + 1] + str(self.coeff.expression())\
                     + '|' + self.str[len(self.name) + 1:]
@@ -300,10 +329,10 @@ but get {}".format(type(coeff)))
         All parameters requires grad. Inplace operation.
 
         Returns:
-            BaseGate, a parameterized gate with all parameters need to
+            BasicGate, a parameterized gate with all parameters need to
                 update gradient.
         """
-        if self.isparameter:
+        if self.parameterized:
             self.coeff.requires_grad()
         return self
 
@@ -312,10 +341,10 @@ but get {}".format(type(coeff)))
         All parameters do not need grad. Inplace operation.
 
         Returns:
-            BaseGate, a parameterized gate with all parameters not need to
+            BasicGate, a parameterized gate with all parameters not need to
             update gradient.
         """
-        if self.isparameter:
+        if self.parameterized:
             self.coeff.no_grad()
         return self
 
@@ -327,7 +356,7 @@ but get {}".format(type(coeff)))
             names (tuple[str]): Parameters that requires grad.
 
         Returns:
-            BaseGate, with some part of parameters need to update gradient.
+            BasicGate, with some part of parameters need to update gradient.
         """
         self.coeff.requires_grad_part(names)
         return self
@@ -340,7 +369,7 @@ but get {}".format(type(coeff)))
             names (tuple[str]): Parameters that not requires grad.
 
         Returns:
-            BaseGate, with some part of parameters not need to update gradient.
+            BasicGate, with some part of parameters not need to update gradient.
         """
         self.coeff.no_grad_part(names)
         return self
@@ -373,6 +402,15 @@ class IntrinsicOneParaGate(ParameterGate):
     def __init__(self, name, coeff=None):
         ParameterGate.__init__(self, name, coeff)
 
+    def get_cpp_obj(self):
+        """Get cpp obj of this gate."""
+        cpp_gate = super().get_cpp_obj()
+        if not self.parameterized:
+            cpp_gate.apply_value(self.coeff)
+        else:
+            cpp_gate.params = self.coeff.get_cpp_obj()
+        return cpp_gate
+
     def hermitian(self):
         """
         Get the hermitian gate of this parameterized gate. Not inplace operation.
@@ -387,6 +425,7 @@ class IntrinsicOneParaGate(ParameterGate):
             RX(a*(-1.0 - 2.0*I))
         """
         hermitian_gate = deepcopy(self)
+        hermitian_gate.daggered = not hermitian_gate.daggered
         hermitian_gate.coeff = 1 * self.coeff
         if isinstance(self.coeff, PR):
             hermitian_gate.coeff *= -1
@@ -428,7 +467,7 @@ class IntrinsicOneParaGate(ParameterGate):
             array([[0.36+0.j  , 0.  -0.93j],
                    [0.  -0.93j, 0.36+0.j  ]])
         """
-        if self.isparameter:
+        if self.parameterized:
             theta = 0
             if isinstance(paras_out[0], dict):
                 theta = self.linearcombination(self.coeff, paras_out[0])
@@ -459,7 +498,7 @@ class IntrinsicOneParaGate(ParameterGate):
             array([[-0.42+0.j  ,  0.  -0.27j],
                    [ 0.  -0.27j, -0.42+0.j  ]])
         """
-        if self.isparameter:
+        if self.parameterized:
             theta = 0
             if isinstance(paras_out[0], dict):
                 theta = self.linearcombination(self.coeff, paras_out[0])

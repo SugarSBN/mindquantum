@@ -18,6 +18,7 @@ import time
 import os
 import numpy as np
 from _parse_args import parser
+
 args = parser.parse_args()
 os.environ['OMP_NUM_THREADS'] = str(args.omp_num_threads)
 
@@ -169,8 +170,8 @@ if __name__ == '__main__':
     ansatz, read_out = create_quantum_model(n)
     encoder_circuit = encoder_circuit_builder(range(1, n))
     encoder_circuit.no_grad()
-    encoder_names = encoder_circuit.para_name
-    ansatz_names = ansatz.para_name
+    encoder_names = encoder_circuit.params_name
+    ansatz_names = ansatz.params_name
     ham = Hamiltonian(QubitOperator('Z0'))
 
     mql = MindQuantumLayer(encoder_names,

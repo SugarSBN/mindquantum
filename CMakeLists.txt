@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.14.0)
+project(MindQuantum)
+set(CMAKE_CXX_FLAGS "-fPIC -std=c++14 -O2 -fopenmp -lpthread")
+set(CMAKE_C_FLAGS "-fPIC -std=c++14 -O2 -fopenmp -lpthread")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/mindquantum)
+set(BUILD_DIR ${CMAKE_SOURCE_DIR}/build)
+include(cmake/utils.cmake)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/mindquantum/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/mindquantum)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/mindquantum/src)
+find_package(Threads)
+# for pybind
+pybind11_add_module(mqbackend ${CMAKE_CURRENT_SOURCE_DIR}/mindquantum/src/binding.cc)
+target_link_libraries(mqbackend PUBLIC mq_projectq QuEST mq_quest mq_base ${CMAKE_THREAD_LIBS_INIT})

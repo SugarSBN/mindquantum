@@ -15,16 +15,18 @@
 """Test unitary coupled-cluster ansatz"""
 
 import os
+
 os.environ['OMP_NUM_THREADS'] = '8'
 import numpy as np
 import mindspore as ms
 from mindquantum.ansatz import UCCAnsatz
 from mindquantum.circuit import Circuit
-from mindquantum.nn import MindQuantumAnsatzOnlyLayer as MAL
+from mindquantum.nn import MQAnsatzOnlyLayer
 from mindquantum.gate import Hamiltonian, X
 from mindquantum.ops import QubitOperator
+from mindquantum.simulator import Simulator
 
-ms.context.set_context(mode=ms.context.GRAPH_MODE, device_target="CPU")
+ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
 
 
 def test_uccsd():
@@ -50,16 +52,18 @@ def test_uccsd():
     vir_orb = [1]
     generalized = True
     trotter_step = 2
-    ucc = UCCAnsatz(n_qubits, n_electrons,
-                    occ_orb, vir_orb,
-                    generalized, trotter_step)
+    ucc = UCCAnsatz(n_qubits, n_electrons, occ_orb, vir_orb, generalized,
+                    trotter_step)
     total_circuit = Circuit()
     for i in range(n_electrons):
         total_circuit += X.on(i)
     total_circuit += ucc.circuit
-    net = MAL(total_circuit.para_name, total_circuit, Hamiltonian(ham.real))
+    sim = Simulator('projectq', total_circuit.n_qubits)
+    f_g_ops = sim.get_expectation_with_grad(Hamiltonian(ham.real),
+                                            total_circuit)
+    net = MQAnsatzOnlyLayer(f_g_ops, len(total_circuit.params_name))
     opti = ms.nn.Adagrad(net.trainable_params(), learning_rate=4e-2)
     train_net = ms.nn.TrainOneStepCell(net, opti)
     for i in range(50):
-        res = train_net().asnumpy()[0, 0]
+        res = train_net().asnumpy()[0]
     assert np.allclose(round(res, 4), -0.9486)

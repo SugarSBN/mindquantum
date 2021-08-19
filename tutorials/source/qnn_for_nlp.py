@@ -54,23 +54,24 @@ label_bin = bin(label)[-1:1:-1].ljust(n_qubits, '0')  # binary form of label
 label_array = np.array([int(i) * np.pi for i in label_bin
                         ]).astype(np.float32)  # parameter value of encoder
 encoder = GenerateEncoderCircuit(n_qubits, prefix='e')  # encoder circuit
-encoder_para_names = encoder.para_name  # parameter names of encoder
+encoder_params_names = encoder.params_name  # parameter names of encoder
 
 print("Label is: ", label)
 print("Binary label is: ", label_bin)
 print("Parameters of encoder is: \n", np.round(label_array, 5))
 print("Encoder circuit is: \n", encoder)
-print("Encoder parameter names are: \n", encoder_para_names)
+print("Encoder parameter names are: \n", encoder_params_names)
 
 context.set_context(mode=context.GRAPH_MODE, device_target="CPU")
 # quantum state evolution operator
-evol = generate_evolution_operator(param_names=encoder_para_names,
+evol = generate_evolution_operator(param_names=encoder_params_names,
                                    circuit=encoder)
 state = evol(Tensor(label_array))
 amp = np.round(np.abs(state)**2, 3)
 
 print("Amplitude of quantum state is: \n", amp)
 print("Label in quantum state is: ", np.argmax(amp))
+
 
 def GenerateTrainData(sample, word_dict):
     n_qubits = np.int(np.ceil(np.log2(1 + max(word_dict.values()))))
@@ -90,6 +91,7 @@ def GenerateTrainData(sample, word_dict):
 
 GenerateTrainData(sample, word_dict)
 
+
 def GenerateAnsatzCircuit(n_qubits, layers, prefix=''):
     if len(prefix) != 0 and prefix[-1] != '_':
         prefix += '_'
@@ -105,6 +107,7 @@ def GenerateAnsatzCircuit(n_qubits, layers, prefix=''):
 
 GenerateAnsatzCircuit(5, 2, 'a')
 
+
 def GenerateEmbeddingHamiltonian(dims, n_qubits):
     hams = []
     for i in range(dims):
@@ -117,6 +120,7 @@ def GenerateEmbeddingHamiltonian(dims, n_qubits):
 
 
 GenerateEmbeddingHamiltonian(5, 5)
+
 
 def QEmbedding(num_embedding, embedding_dim, window, layers, n_threads):
     n_qubits = int(np.ceil(np.log2(num_embedding)))
@@ -131,8 +135,8 @@ def QEmbedding(num_embedding, embedding_dim, window, layers, n_threads):
         encoder.no_grad()
         circ += encoder
         circ += ansatz
-        encoder_param_name.extend(encoder.para_name)
-        ansatz_param_name.extend(ansatz.para_name)
+        encoder_param_name.extend(encoder.params_name)
+        ansatz_param_name.extend(ansatz.params_name)
     net = MindQuantumLayer(encoder_param_name,
                            ansatz_param_name,
                            circ,
@@ -248,6 +252,7 @@ plt.plot(loss_monitor.loss, '.')
 plt.xlabel('Steps')
 plt.ylabel('Loss')
 plt.show()
+
 
 class CBOWClassical(nn.Cell):
     def __init__(self, num_embedding, embedding_dim, window, hidden_dim):

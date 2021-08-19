@@ -97,43 +97,6 @@ def test_state_evol():
     fs1 = StateEvolution(circuit).final_state(pr)
     fs2 = StateEvolution(circuit.apply_value(pr)).final_state()
     assert np.allclose(fs1, fs2)
-    np.random.seed(42)
-    sampling = StateEvolution(circuit.apply_value(pr)).sampling(shots=100)
-    sampling_exp = {
-        '00000': 0,
-        '00001': 0,
-        '00010': 0,
-        '00011': 0,
-        '00100': 0,
-        '00101': 0,
-        '00110': 0,
-        '00111': 0,
-        '01000': 0,
-        '01001': 0,
-        '01010': 0,
-        '01011': 0,
-        '01100': 0,
-        '01101': 0,
-        '01110': 0,
-        '01111': 0,
-        '10000': 0,
-        '10001': 0,
-        '10010': 0,
-        '10011': 0,
-        '10100': 0,
-        '10101': 2,
-        '10110': 0,
-        '10111': 2,
-        '11000': 0,
-        '11001': 0,
-        '11010': 0,
-        '11011': 0,
-        '11100': 7,
-        '11101': 44,
-        '11110': 4,
-        '11111': 41
-    }
-    assert sampling == sampling_exp
 
 
 def test_qft():

@@ -27,6 +27,7 @@ from mindquantum.gate import X
 from mindquantum.gate import Y
 from mindquantum.gate import Z
 from mindquantum.gate import Hamiltonian
+from mindquantum.gate import Measure
 import mindquantum.gate as G
 from mindquantum.gate.basic import _check_gate_type
 from mindquantum.utils import bprint
@@ -75,6 +76,15 @@ class CollectionMap:
             else:
                 self.map[k] += 1
 
+    def collect_only_one(self, keys, raise_msg):
+        """collect item only single time, otherwise raise error"""
+        if not isinstance(keys, list):
+            keys = [keys]
+        for k in keys:
+            if k in self.map:
+                raise ValueError(raise_msg)
+            self.map[k] = 1
+
     def delete(self, keys):
         """delete items"""
         if not isinstance(keys, list):
@@ -111,6 +121,13 @@ class CollectionMap:
                 self.map[k] += v
             else:
                 self.map[k] = v
+
+    def merge_only_one(self, other, raise_msg):
+        """merge with other collection container"""
+        for k, _ in other.map.items():
+            if k in self.map:
+                raise ValueError(raise_msg)
+            self.map[k] = 1
 
     def unmerge(self, other):
         """delete with other collection container"""
@@ -170,30 +187,39 @@ class Circuit(list):
         list.__init__([])
         self.all_qubits = CollectionMap()
         self.all_paras = CollectionMap()
+        self.all_measures = CollectionMap()
         if gates is not None:
             if isinstance(gates, Iterable):
                 self.extend(gates)
             else:
                 self.append(gates)
+        self.has_cpp_obj = False
 
     def append(self, gate):
         """Append a gate."""
         _check_gate_type(gate)
-        super().append(gate)
+        if isinstance(gate, Measure):
+            self.all_measures.collect_only_one(
+                gate, f'measure key {gate.key} already exist.')
         self.all_qubits.collect(gate.obj_qubits)
         self.all_qubits.collect(gate.ctrl_qubits)
-        if gate.isparameter:
+        if gate.parameterized:
             self.all_paras.collect(list(gate.coeff.keys()))
+        super().append(gate)
+        self.has_cpp_obj = False
 
     def extend(self, gates):
         """Extend a circuit."""
         if isinstance(gates, Circuit):
-            super().extend(gates)
+            self.all_measures.merge_only_one(gates.all_measures,
+                                             "Measure already exist.")
             self.all_qubits.merge(gates.all_qubits)
             self.all_paras.merge(gates.all_paras)
+            super().extend(gates)
         else:
             for gate in gates:
                 self.append(gate)
+        self.has_cpp_obj = False
 
     def __add__(self, gates):
         out = Circuit()
@@ -247,18 +273,32 @@ class Circuit(list):
         old_v = self[k]
         self.all_qubits.delete(old_v.obj_qubits)
         self.all_qubits.delete(old_v.ctrl_qubits)
-        if old_v.isparameter:
+        if old_v.parameterized:
             self.all_paras.delete(list(old_v.coeff.keys()))
+        if isinstance(old_v, Measure):
+            self.all_measures.delete(old_v)
         super().__setitem__(k, v)
         self.all_qubits.collect(v.obj_qubits)
         self.all_qubits.collect(v.ctrl_qubits)
-        if v.isparameter:
+        if v.parameterized:
             self.all_paras.collect(list(v.coeff.keys()))
+        if isinstance(v, Measure):
+            self.all_measures.collect_only_one(
+                v, f'measure key {v.key} already exist.')
+        self.has_cpp_obj = False
 
     def __getitem__(self, sliced):
         if isinstance(sliced, int):
             return super().__getitem__(sliced)
         return Circuit(super().__getitem__(sliced))
+
+    @property
+    def has_measure(self):
+        return self.all_measures.size != 0
+
+    @property
+    def parameterized(self):
+        return self.all_paras.size != 0
 
     def insert(self, index, gates):
         """
@@ -272,19 +312,26 @@ class Circuit(list):
             super().insert(index, gates)
             self.all_qubits.collect(gates.obj_qubits)
             self.all_qubits.collect(gates.ctrl_qubits)
-            if gates.isparameter:
+            if gates.parameterized:
                 self.all_paras.collect(list(gates.coeff.keys()))
+            if isinstance(gates, Measure):
+                self.all_measures.collect_only_one(
+                    gates, f'measure key {gates.key} already exist.')
         elif isinstance(gates, Iterable):
             for gate in gates[::-1]:
                 _check_gate_type(gate)
                 self.insert(index, gate)
                 self.all_qubits.collect(gate.obj_qubits)
                 self.all_qubits.collect(gate.ctrl_qubits)
-                if gate.isparameter:
+                if gate.parameterized:
                     self.all_paras.collect(list(gate.coeff.keys()))
+                if isinstance(gate, Measure):
+                    self.all_measures.collect_only_one(
+                        gate, f'measure key {gate.key} already exist.')
         else:
             raise TypeError("Unsupported type for quantum gate: {}".format(
                 type(gates)))
+        self.has_cpp_obj = False
 
     def no_grad(self):
         """
@@ -292,6 +339,7 @@ class Circuit(list):
         """
         for gate in self:
             gate.no_grad()
+        self.has_cpp_obj = False
         return self
 
     def requires_grad(self):
@@ -300,6 +348,7 @@ class Circuit(list):
         """
         for gate in self:
             gate.requires_grad()
+        self.has_cpp_obj = False
         return self
 
     def __str__(self):
@@ -336,7 +385,7 @@ class Circuit(list):
         self.num_non_para_gate = 0
         self.num_para_gate = 0
         for gate in self:
-            if gate.isparameter:
+            if gate.parameterized:
                 self.num_para_gate += 1
             else:
                 self.num_non_para_gate += 1
@@ -386,7 +435,7 @@ class Circuit(list):
         return pr
 
     @property
-    def para_name(self):
+    def params_name(self):
         """
         Get the parameter name of this circuit.
 
@@ -397,7 +446,7 @@ class Circuit(list):
             >>> from mindquantum.gate import RX
             >>> from mindquantum.circuit import Circuit
             >>> circuit = Circuit(RX({'a': 1, 'b': 2}).on(0))
-            >>> circuit.para_name
+            >>> circuit.params_name
             ['a', 'b']
         """
         return list(self.all_paras.keys())
@@ -425,16 +474,30 @@ class Circuit(list):
         """
         circuit = Circuit()
         for gate in self:
-            if not gate.isparameter:
+            if not gate.parameterized:
                 circuit += gate
             else:
-                if set(gate.coeff.para_name).issubset(pr):
+                if set(gate.coeff.params_name).issubset(pr):
                     coeff = gate.coeff.combination(pr)
                 else:
                     coeff = 1 * gate.coeff
-                circuit += gate.__class__(coeff).on(gate.obj_qubits,
-                                                    gate.ctrl_qubits)
+                circuit += gate.__class__(coeff).on(
+                    gate.obj_qubits,
+                    gate.ctrl_qubits)  #TODO: 🔥🔥🔥《健全性测试》↪️检查时候对所有门都适用，体现在测试文档中
         return circuit
+
+    def get_cpp_obj(self, hermitian=False):
+        """Get cpp obj of circuit."""
+        if not self.has_cpp_obj:
+            self.has_cpp_obj = True
+            self.cpp_obj = [i.get_cpp_obj() for i in self]
+            self.herm_cpp_obj = [i.get_cpp_obj() for i in self.hermitian]
+
+        if hasattr(self, 'cpp_obj') and hasattr(self, 'herm_cpp_obj'):
+            if hermitian:
+                return self.herm_cpp_obj
+            return self.cpp_obj
+        raise ValueError("Circuit does not generate cpp obj yet.")
 
     def mindspore_data(self):
         """
@@ -450,7 +513,7 @@ class Circuit(list):
             'gate_requires_grad': []
         }
         for gate in self:
-            if gate.isparameter:
+            if gate.parameterized:
                 m_data['gate_names'].append(gate.name)
                 m_data['gate_matrix'].append([[["0.0", "0.0"], ["0.0", "0.0"]],
                                               [["0.0", "0.0"], ["0.0",
