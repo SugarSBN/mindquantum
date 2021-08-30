@@ -30,7 +30,6 @@ def get_supported_simulator():
 
 
 #TODO: 🔥🔥🔥🔥🔥《模拟器相关文档开发》↪️编写模拟器的文档
-#TODO: 🔥🔥🔥《模拟器模块测试》↪️充分测试模拟器相关的接口
 class Simulator:
     """Simulator"""
     def __init__(self, backend: str, n_qubits: int, seed: int = 1):
@@ -70,7 +69,7 @@ class Simulator:
 
     def apply_circuit(self, circuit: Circuit, parameter_resolver=None):
         """apply circuit"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️3.对量子线路和参数解析器进行校验，如果线路含有测量门，返回测量结果（参考sampling）
+        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️4.对量子线路和参数解析器进行校验，如果线路含有测量门，返回测量结果（参考sampling）
         if not isinstance(circuit, Circuit):
             raise TypeError(
                 f"circuit must be Circuit, but get {type(Circuit)}")
@@ -106,7 +105,7 @@ match with circuit parameters ({len(circuit.params_name)}, )")
                  shots: int = 1,
                  seed: int = None):
         """samping the measurement"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️4.对量子线路和参数解析器等进行校验
+        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️5.对量子线路和参数解析器等进行校验
         if circuit.parameterized:
             if parameter_resolver is None:
                 raise ValueError(
@@ -128,7 +127,7 @@ match with circuit parameters ({len(circuit.params_name)}, )")
 
     def apply_hamiltonian(self, hamiltonian: Hamiltonian):
         """apply hamiltonian"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️5.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数时候一致
+        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️6.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数时候一致
         if not isinstance(hamiltonian, Hamiltonian):
             raise TypeError(
                 f"hamiltonian requires a Hamiltonian, but got {type(hamiltonian)}"
@@ -137,7 +136,7 @@ match with circuit parameters ({len(circuit.params_name)}, )")
 
     def get_expectation(self, hamiltonian):
         """get expectation"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️6.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数时候一致
+        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️7.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数时候一致
         return self.sim.get_expectation(hamiltonian.get_cpp_obj())
 
     def get_qs(self):

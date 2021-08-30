@@ -483,7 +483,7 @@ class Circuit(list):
                     coeff = 1 * gate.coeff
                 circuit += gate.__class__(coeff).on(
                     gate.obj_qubits,
-                    gate.ctrl_qubits)  #TODO: 🔥🔥🔥《健全性测试》↪️检查时候对所有门都适用，体现在测试文档中
+                    gate.ctrl_qubits)
         return circuit
 
     def get_cpp_obj(self, hermitian=False):
