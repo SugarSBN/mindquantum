@@ -36,4 +36,3 @@ def test_transform():
 
     op1_ternary_tree = op_transform.ternary_tree()
     assert str(op1_ternary_tree) == '0.5 [X0 Z1] +\n-0.5j [Y0 X2] '
-    #TODO bravyi_kitaev_superfast()

@@ -1,0 +1,21 @@
+diff --color -aur quest-src/QuEST/CMakeLists.txt quest-src_new/QuEST/CMakeLists.txt
+--- quest-src/QuEST/CMakeLists.txt	2021-08-22 03:29:49.683482547 +0800
++++ quest-src_new/QuEST/CMakeLists.txt	2021-08-22 03:28:48.030341976 +0800
+@@ -284,7 +284,7 @@
+ add_subdirectory(src)
+ 
+ if (GPUACCELERATED)
+-    cuda_add_library(QuEST SHARED
++    cuda_add_library(QuEST STATIC
+         ${QuEST_SRC}
+     )
+ elseif (WIN32)
+@@ -292,7 +292,7 @@
+         ${QuEST_SRC}
+     )
+ else ()
+-    add_library(QuEST SHARED
++    add_library(QuEST STATIC
+         ${QuEST_SRC}
+     )
+ endif()

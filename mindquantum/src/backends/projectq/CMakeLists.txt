@@ -1,0 +1,6 @@
+file(GLOB_RECURSE PROJECTQ_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cc" "*.h")
+add_library(mq_projectq STATIC ${PROJECTQ_SRC})
+SET_TARGET_PROPERTIES(mq_projectq PROPERTIES LINKER_LANGUAGE CXX)
+target_compile_options(mq_projectq PUBLIC -ffast-math)
+target_compile_options(mq_projectq PUBLIC -mavx)
+target_compile_options(mq_projectq PUBLIC -DINTRIN)

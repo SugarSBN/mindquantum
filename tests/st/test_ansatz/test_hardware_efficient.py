@@ -15,15 +15,17 @@
 """Test hardware efficient ansatz"""
 
 import os
+
 os.environ['OMP_NUM_THREADS'] = '8'
 import numpy as np
 import mindspore as ms
 from mindquantum.ansatz import HardwareEfficientAnsatz
-from mindquantum.nn import MindQuantumAnsatzOnlyLayer as MAL
+from mindquantum.nn import MQAnsatzOnlyLayer
 from mindquantum.gate import Hamiltonian, RX, RY, X
 from mindquantum.ops import QubitOperator
+from mindquantum.simulator import Simulator
 
-ms.context.set_context(mode=ms.context.GRAPH_MODE, device_target="CPU")
+ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
 
 
 def test_hardware_efficient():
@@ -31,10 +33,12 @@ def test_hardware_efficient():
     n_qubits = 3
     hea = HardwareEfficientAnsatz(n_qubits, [RX, RY, RX], X, 'all', depth)
     ham = QubitOperator('Z0 Z1 Z2')
+    sim = Simulator('projectq', hea.circuit.n_qubits)
+    f_g_ops = sim.get_expectation_with_grad(Hamiltonian(ham), hea.circuit)
     ms.set_seed(42)
-    net = MAL(hea.circuit.para_name, hea.circuit, Hamiltonian(ham))
+    net = MQAnsatzOnlyLayer(f_g_ops, len(hea.circuit.params_name))
     opti = ms.nn.Adagrad(net.trainable_params(), learning_rate=4e-1)
     train_net = ms.nn.TrainOneStepCell(net, opti)
     for i in range(3):
-        res = train_net().asnumpy()[0, 0]
+        res = train_net().asnumpy()[0]
     assert np.allclose(round(res, 4), -0.7588)

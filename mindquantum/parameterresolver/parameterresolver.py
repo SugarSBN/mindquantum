@@ -18,6 +18,7 @@ from collections.abc import Iterable
 from copy import deepcopy
 import numpy as np
 import sympy as sp
+from .. import mqbackend as mb
 
 
 class ParameterResolver(dict):
@@ -60,7 +61,12 @@ class ParameterResolver(dict):
                         v, type(v)))
         super(ParameterResolver, self).__init__(data)
         self.no_grad_parameters = set()
-        self.requires_grad_parameters = set(self.para_name)
+        self.requires_grad_parameters = set(self.params_name)
+
+    def get_cpp_obj(self):
+        """Get cpp obj of this parameter resolver"""
+        return mb.parameter_resolver(self, self.no_grad_parameters,
+                                     self.requires_grad_parameters)
 
     def __setitem__(self, keys, values):
         """
@@ -217,7 +223,7 @@ class ParameterResolver(dict):
         return super().__eq__(other) and no_grad_eq and requires_grad_eq
 
     @property
-    def para_name(self):
+    def params_name(self):
         """
         Get the parameters name.
 
@@ -227,7 +233,7 @@ class ParameterResolver(dict):
         Examples:
             >>> from mindquantum import ParameterResolver
             >>> pr = ParameterResolver({'a': 1, 'b': 2})
-            >>> pr.para_name
+            >>> pr.params_name
             ['a', 'b']
         """
         return list(self.keys())
@@ -265,7 +271,7 @@ class ParameterResolver(dict):
             {'a', 'b'}
         """
         self.no_grad_parameters = set()
-        self.requires_grad_parameters = set(self.para_name)
+        self.requires_grad_parameters = set(self.params_name)
         return self
 
     def no_grad(self):
@@ -282,7 +288,7 @@ class ParameterResolver(dict):
             >>> pr.requires_grad_parameters
             set()
         """
-        self.no_grad_parameters = set(self.para_name)
+        self.no_grad_parameters = set(self.params_name)
         self.requires_grad_parameters = set()
         return self
 

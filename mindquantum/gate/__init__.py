@@ -48,12 +48,13 @@ from .basicgate import YY
 from .basicgate import ZZ
 from .hamiltonian import Hamiltonian
 from .projector import Projector
-
+from .measurement import Measure
+from .measurement import MeasureResult
 
 __all__ = [
     'BasicGate', 'IntrinsicOneParaGate', 'NoneParameterGate', 'ParameterGate',
     'H', 'CNOT', 'X', 'Y', 'Z', 'I', 'S', 'Power', 'SWAP', 'UnivMathGate',
     'RX', 'RY', 'RZ', 'PhaseShift', 'XX', 'YY', 'ZZ', 'IGate', 'XGate',
     'YGate', 'ZGate', 'HGate', 'SWAPGate', 'CNOTGate', 'Hamiltonian',
-    'Projector'
+    'Projector', 'Measure', 'MeasureResult'
 ]

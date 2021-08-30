@@ -53,10 +53,8 @@ def test_spin_adapted_t2():
 def test_uccsd0():
     h2_uccsd0 = uccsd0_singlet_generator(4, 2)
     h2_uccsd0_terms = set(list(h2_uccsd0.terms))
-    h2_uccsd0_terms_check = set([((2, 1), (0, 0)),
-                                 ((3, 1), (1, 0)),
-                                 ((0, 1), (2, 0)),
-                                 ((1, 1), (3, 0)),
+    h2_uccsd0_terms_check = set([((2, 1), (0, 0)), ((3, 1), (1, 0)),
+                                 ((0, 1), (2, 0)), ((1, 1), (3, 0)),
                                  ((3, 1), (2, 1), (1, 0), (0, 0)),
                                  ((1, 1), (0, 1), (3, 0), (2, 0))])
     assert h2_uccsd0_terms == h2_uccsd0_terms_check
@@ -64,31 +62,33 @@ def test_uccsd0():
     lih_uccsd0 = uccsd0_singlet_generator(12, 4)
     lih_uccsd0_circuit = TimeEvolution(
         Transform(lih_uccsd0).jordan_wigner().imag, 1).circuit
-    n_params_lih = len(lih_uccsd0_circuit.para_name)
+    n_params_lih = len(lih_uccsd0_circuit.params_name)
     assert n_params_lih == 44
 
     # cas means complete active space
-    lih_uccgsd0_cas = uccsd0_singlet_generator(12, 4,
-                                               occ_orb=[1], vir_orb=[2, 3],
+    lih_uccgsd0_cas = uccsd0_singlet_generator(12,
+                                               4,
+                                               occ_orb=[1],
+                                               vir_orb=[2, 3],
                                                generalized=True)
     # The max index of affected qubits in the ansatz is 7 = 8-1.
     # Does not mean the number of qubits in Hamiltonian is reduced to 8.
     assert count_qubits(lih_uccgsd0_cas) == 8
     lih_uccgsd0_cas_circuit = TimeEvolution(
         Transform(lih_uccgsd0_cas).jordan_wigner().imag, 1).circuit
-    n_params_lih_cas = len(lih_uccgsd0_cas_circuit.para_name)
+    n_params_lih_cas = len(lih_uccgsd0_cas_circuit.params_name)
     assert n_params_lih_cas == 24
 
     # UCCSD with fully occupied orbitals should lead to 0 parameters
     he2_uccsd = uccsd0_singlet_generator(4, 4)
     he2_uccsd_circuit = TimeEvolution(
         Transform(he2_uccsd).jordan_wigner().imag, 1).circuit
-    n_params_he2 = len(he2_uccsd_circuit.para_name)
+    n_params_he2 = len(he2_uccsd_circuit.params_name)
     assert n_params_he2 == 0
 
     # UCCGSD will not be affected by the occupancy number
     he2_uccgsd = uccsd0_singlet_generator(4, 4, generalized=True)
     he2_uccgsd_circuit = TimeEvolution(
         Transform(he2_uccgsd).jordan_wigner().imag, 1).circuit
-    n_params_he2_gsd = len(he2_uccgsd_circuit.para_name)
+    n_params_he2_gsd = len(he2_uccgsd_circuit.params_name)
     assert n_params_he2_gsd == 5

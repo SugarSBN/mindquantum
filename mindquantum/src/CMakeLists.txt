@@ -1,0 +1,21 @@
+file(GLOB_RECURSE MQ_BASE_SRC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cc" "*.h")
+
+list(REMOVE_ITEM MQ_BASE_SRC "binding.cc")
+list(REMOVE_ITEM MQ_BASE_SRC "backends/projectq/projectq_utils.h")
+list(REMOVE_ITEM MQ_BASE_SRC "backends/projectq/projectq.h")
+list(REMOVE_ITEM MQ_BASE_SRC "backends/quest/quest.h")
+list(REMOVE_ITEM MQ_BASE_SRC "backends/quest/quest_utils.h")
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backends)
+
+if(GPUACCELERATED)
+    find_package(CUDA REQUIRED)
+    set(CUDA_PROPAGATE_HOST_FLAGS FALSE)
+    cuda_add_library(mq_base STATIC ${MQ_BASE_SRC})
+    target_include_directories(mq_base PUBLIC ${CUDA_INCLUDE_DIRS})
+    target_link_libraries(mq_base ${CUDA_LIBRARIES})
+    target_compile_options(mq_base PUBLIC -DGPUACCELERATED)
+else()
+    add_library(mq_base STATIC ${MQ_BASE_SRC})
+endif()
+# set_target_properties(mq_base PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${MQ_LIB_DIR})

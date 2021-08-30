@@ -17,6 +17,7 @@ set -e
 
 BASEPATH=$(cd "$(dirname $0)"; pwd)
 OUTPUT_PATH="${BASEPATH}/output"
+BUILD_PATH="${BASEPATH}/build"
 PYTHON=$(which python3)
 
 mk_new_dir() {
@@ -38,6 +39,14 @@ write_checksum() {
     done
 }
 
+mkdir -pv "${BUILD_PATH}"
+cd ${BUILD_PATH}
+#TODO: 🔥🔥🔥🔥🔥《项目编译》↪️2.优化build.sh的编译逻辑，将build.sh的编译指令传递给cmake，制定时候支持GPU，编译时的线程等
+# cmake ${BASEPATH} -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=70 -DMULTITHREADED=0
+cmake ${BASEPATH}
+make -j12
+
+cd ${BASEPATH}
 mk_new_dir "${OUTPUT_PATH}"
 
 ${PYTHON} ${BASEPATH}/setup.py bdist_wheel

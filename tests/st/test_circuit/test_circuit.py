@@ -96,12 +96,12 @@ def test_decompose_single_term_time_evolution():
 
 
 def test_generate_uccsd():
-    circ, init_amp, para_name, ham, n_q, n_e = generate_uccsd(
+    circ, init_amp, params_name, ham, n_q, n_e = generate_uccsd(
         './tests/st/LiH.hdf5')
     assert len(circ) == 4416
     assert circ[2000] == G.X.on(9, 8)
     assert np.allclose(init_amp[-5], 0.001687182323430231)
-    assert len(para_name) == 20
+    assert len(params_name) == 20
     assert len(ham.terms) == 631
     assert n_q == 12
     assert n_e == 4

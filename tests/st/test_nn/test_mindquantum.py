@@ -15,14 +15,16 @@
 """Test mindquantum."""
 
 import os
+
 os.environ['OMP_NUM_THREADS'] = '8'
 from mindquantum.ops import QubitOperator
 import numpy as np
 import mindspore as ms
 import mindquantum.gate as G
-from mindquantum.nn import MindQuantumLayer, MindQuantumAnsatzOnlyLayer
+from mindquantum.nn import MQLayer, MQAnsatzOnlyLayer
 from mindquantum.circuit import generate_uccsd
 from mindquantum import Circuit, Hamiltonian
+from mindquantum.simulator import Simulator
 
 
 def test_mindquantumlayer_forward():
@@ -33,15 +35,21 @@ def test_mindquantumlayer_forward():
     ansatz += G.RY('a').on(0)
     ham = Hamiltonian(QubitOperator('Z0'))
     ms.set_seed(42)
-    ms.context.set_context(mode=ms.context.GRAPH_MODE, device_target="CPU")
-    net = MindQuantumLayer(['e1'], ['a'], encoder + ansatz, ham)
+    ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
+    circ = encoder + ansatz
+    sim = Simulator('projectq', circ.n_qubits)
+    f_g_ops = sim.get_expectation_with_grad(ham,
+                                            circ,
+                                            encoder_params_name=['e1'],
+                                            ansatz_params_name=['a'])
+    net = MQLayer(f_g_ops, 1)
     encoder_data = ms.Tensor(np.array([[0.5]]).astype(np.float32))
     res = net(encoder_data)
     assert round(float(res.asnumpy()[0, 0]), 3) == 0.878
 
 
 def test_vqe_convergence():
-    ms.context.set_context(mode=ms.context.GRAPH_MODE, device_target="CPU")
+    ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
     ansatz_circuit, \
         init_amplitudes, \
         ansatz_parameter_names, \
@@ -50,9 +58,10 @@ def test_vqe_convergence():
             './tests/st/H4.hdf5', th=-1)
     hf_circuit = Circuit([G.X.on(i) for i in range(n_electrons)])
     vqe_circuit = hf_circuit + ansatz_circuit
-    molecule_pqcnet = MindQuantumAnsatzOnlyLayer(
-        ansatz_parameter_names, vqe_circuit,
-        Hamiltonian(hamiltonian_qubitop.real))
+    sim = Simulator('projectq', vqe_circuit.n_qubits)
+    f_g_ops = sim.get_expectation_with_grad(
+        Hamiltonian(hamiltonian_qubitop.real), vqe_circuit)
+    molecule_pqcnet = MQAnsatzOnlyLayer(f_g_ops, len(vqe_circuit.params_name))
     optimizer = ms.nn.Adagrad(molecule_pqcnet.trainable_params(),
                               learning_rate=4e-2)
     train_pqcnet = ms.nn.TrainOneStepCell(molecule_pqcnet, optimizer)

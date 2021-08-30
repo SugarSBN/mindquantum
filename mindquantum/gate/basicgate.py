@@ -36,6 +36,14 @@ class CNOTGate(NoneParameterGate):
         """Define the corresponded projectq gate."""
         self.projectq_gate = pjops.CNOT
 
+    def on(self, obj_qubits, ctrl_qubits=None):
+        out = super(CNOTGate, self).on(obj_qubits, ctrl_qubits)
+        if ctrl_qubits is None:
+            raise ValueError("A control qubit is needed for CNOT gate!")
+        out.ctrl_qubits = []
+        out.obj_qubits = [obj_qubits, ctrl_qubits]
+        return out
+
 
 class HGate(NoneParameterGate):
     r"""

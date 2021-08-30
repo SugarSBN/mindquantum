@@ -22,43 +22,41 @@ from mindquantum.hiqfermion.ucc import quccsd_generator
 def test_quccsd():
     h2_quccsd = quccsd_generator(4, 2)
     h2_quccsd_terms = set(list(h2_quccsd.terms))
-    h2_quccsd_terms_check = set([((3, 1), (0, 0)),
-                                 ((3, 1), (1, 0)),
-                                 ((1, 1), (2, 0)),
-                                 ((1, 1), (3, 0)),
-                                 ((2, 1), (0, 0)),
-                                 ((2, 1), (1, 0)),
-                                 ((0, 1), (2, 0)),
-                                 ((0, 1), (3, 0)),
+    h2_quccsd_terms_check = set([((3, 1), (0, 0)), ((3, 1), (1, 0)),
+                                 ((1, 1), (2, 0)), ((1, 1), (3, 0)),
+                                 ((2, 1), (0, 0)), ((2, 1), (1, 0)),
+                                 ((0, 1), (2, 0)), ((0, 1), (3, 0)),
                                  ((3, 1), (2, 1), (1, 0), (0, 0)),
                                  ((1, 1), (0, 1), (3, 0), (2, 0))])
     assert h2_quccsd_terms == h2_quccsd_terms_check
 
     lih_quccsd = quccsd_generator(12, 4)
-    lih_quccsd_circuit = TimeEvolution(
-        lih_quccsd.to_qubit_operator().imag, 1).circuit
-    n_params_lih = len(lih_quccsd_circuit.para_name)
+    lih_quccsd_circuit = TimeEvolution(lih_quccsd.to_qubit_operator().imag,
+                                       1).circuit
+    n_params_lih = len(lih_quccsd_circuit.params_name)
     assert n_params_lih == 200
 
-    lih_quccgsd_cas = quccsd_generator(12, 4,
-                                       occ_orb=[1], vir_orb=[2, 3],
+    lih_quccgsd_cas = quccsd_generator(12,
+                                       4,
+                                       occ_orb=[1],
+                                       vir_orb=[2, 3],
                                        generalized=True)
     assert count_qubits(lih_quccgsd_cas) == 8
     lih_quccgsd_cas_circuit = TimeEvolution(
         lih_quccgsd_cas.to_qubit_operator().imag, 1).circuit
-    n_params_lih = len(lih_quccgsd_cas_circuit.para_name)
+    n_params_lih = len(lih_quccgsd_cas_circuit.params_name)
     assert n_params_lih == 135
 
     # qUCCSD with fully occupied orbitals should lead to zero parameters
     he2_quccsd = quccsd_generator(4, 4)
-    he2_quccsd_circuit = TimeEvolution(
-        he2_quccsd.to_qubit_operator().imag, 1).circuit
-    n_params_he2 = len(he2_quccsd_circuit.para_name)
+    he2_quccsd_circuit = TimeEvolution(he2_quccsd.to_qubit_operator().imag,
+                                       1).circuit
+    n_params_he2 = len(he2_quccsd_circuit.params_name)
     assert n_params_he2 == 0
 
     # qUCCGSD will not be affected by the occupancy numbers
     he2_quccsd = quccsd_generator(4, 4, generalized=True)
-    he2_quccsd_circuit = TimeEvolution(
-        he2_quccsd.to_qubit_operator().imag, 1).circuit
-    n_params_he2 = len(he2_quccsd_circuit.para_name)
+    he2_quccsd_circuit = TimeEvolution(he2_quccsd.to_qubit_operator().imag,
+                                       1).circuit
+    n_params_he2 = len(he2_quccsd_circuit.params_name)
     assert n_params_he2 == 27

@@ -65,7 +65,7 @@ class UCCAnsatz(Ansatz):
         >>> circuit_list = list(ucc.circuit)
         >>> len(circuit_list)
         3624
-        >>> params_list = ucc.circuit.para_name
+        >>> params_list = ucc.circuit.params_name
         >>> len(params_list)
         40
         >>> for i in range(10):

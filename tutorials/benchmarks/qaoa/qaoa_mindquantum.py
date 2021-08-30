@@ -16,6 +16,7 @@
 import time
 import os
 from _parse_args import parser
+
 args = parser.parse_args()
 os.environ['OMP_NUM_THREADS'] = str(args.omp_num_threads)
 import numpy as np
@@ -59,7 +60,7 @@ for (v, u) in E:
 ham = Hamiltonian(ham)
 
 circ = circuit_qaoa(p)
-ansatz_name = circ.para_name
+ansatz_name = circ.params_name
 net = MindQuantumLayer(['null'], ansatz_name, RX('null').on(0) + circ, ham)
 train_loader = ds.NumpySlicesDataset({
     'x': np.array([[0]]).astype(np.float32),

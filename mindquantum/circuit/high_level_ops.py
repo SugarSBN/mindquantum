@@ -212,7 +212,7 @@ def _add_prefix(circ, prefix):
     out = Circuit()
     for g in circ:
         g = copy.deepcopy(g)
-        if g.isparameter:
+        if g.parameterized:
             pr = PR()
             for k, v in g.coeff.items():
                 pr[f'{prefix}_{k}'] = v
@@ -269,7 +269,7 @@ def _change_param_name(circ, name_map):
     out = Circuit()
     for g in circ:
         g = copy.deepcopy(g)
-        if g.isparameter:
+        if g.parameterized:
             pr = PR()
             for k, v in g.coeff.items():
                 if k not in name_map:

@@ -91,7 +91,7 @@ class HardwareEfficientAnsatz(Ansatz):
         if not isinstance(depth, int) or depth <= 0:
             raise ValueError(f"depth requires a positive int, but get {depth}")
         if not isinstance(entangle_gate,
-                          BasicGate) or entangle_gate.isparameter:
+                          BasicGate) or entangle_gate.parameterized:
             raise ValueError(
                 f"entangle gate requires a non parameterized gate, but get {entangle_gate}"
             )

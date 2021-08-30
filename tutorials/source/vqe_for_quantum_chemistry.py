@@ -47,6 +47,7 @@ molecule_pqc = generate_pqc_operator(["null"], ansatz_parameter_names,
                                      RX("null").on(0) + total_circuit,
                                      Hamiltonian(hamiltonian_QubitOp))
 
+
 class PQCNet(ms.nn.Cell):
     def __init__(self, pqc):
         super(PQCNet, self).__init__()
@@ -101,7 +102,7 @@ ucc_fermion_ops = uccsd_singlet_generator(molecule_of.n_qubits,
 ucc_qubit_ops = Transform(ucc_fermion_ops).jordan_wigner()
 
 ansatz_circuit = TimeEvolution(ucc_qubit_ops.imag, 1.0).circuit
-ansatz_parameter_names = ansatz_circuit.para_name
+ansatz_parameter_names = ansatz_circuit.params_name
 
 total_circuit = hartreefock_wfn_circuit + ansatz_circuit
 total_circuit.summary()

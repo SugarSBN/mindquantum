@@ -61,7 +61,7 @@ ham = Hamiltonian(build_ham(g))
 ansatz = build_ansatz(g, p)
 init_state_circ = UN(H, g.nodes)
 
-net = MindQuantumAnsatzOnlyLayer(ansatz.para_name, init_state_circ + ansatz,
+net = MindQuantumAnsatzOnlyLayer(ansatz.params_name, init_state_circ + ansatz,
                                  ham)
 opti = nn.Adam(net.trainable_params(), learning_rate=0.05)
 train_net = nn.TrainOneStepCell(net, opti)
@@ -70,7 +70,7 @@ for i in range(600):
     if i % 10 == 0:
         print("train step:", i, ", cut:", (len(g.edges) - train_net()) / 2)
 
-pr = dict(zip(ansatz.para_name, net.weight.asnumpy()))
+pr = dict(zip(ansatz.params_name, net.weight.asnumpy()))
 
 print(StateEvolution(init_state_circ + ansatz).final_state(pr, ket=True))
 state = StateEvolution(init_state_circ + ansatz).final_state(pr)

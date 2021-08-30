@@ -16,6 +16,7 @@
 import time
 import os
 from _parse_args import parser
+
 args = parser.parse_args()
 os.environ['OMP_NUM_THREADS'] = str(args.omp_num_threads)
 import numpy as np
@@ -75,8 +76,8 @@ x_train_bin, y_train_nocon, x_test_bin, y_test_nocon = data['arr_0'], data[
 x_train_circ = [convert_to_circuit(x, range(1, n_qubits)) for x in x_train_bin]
 
 ansatz, ham = create_quantum_model(n_qubits)
-model_para_names = ansatz.para_name
-ops = generate_pqc_operator(model_para_names, ['null'],
+model_params_names = ansatz.params_name
+ops = generate_pqc_operator(model_params_names, ['null'],
                             RX('null').on(0) + ansatz,
                             ham,
                             n_threads=args.parallel_worker)
