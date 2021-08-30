@@ -41,7 +41,7 @@ write_checksum() {
 
 mkdir -pv "${BUILD_PATH}"
 cd ${BUILD_PATH}
-#TODO: 🔥🔥🔥🔥🔥《项目编译》↪️2.优化build.sh的编译逻辑，将build.sh的编译指令传递给cmake，制定时候支持GPU，编译时的线程等
+#TODO: 🔥🔥🔥🔥🔥《项目编译》↪️2.优化build.sh的编译逻辑，将build.sh的编译指令传递给cmake，指定时候支持GPU，编译时的线程等
 # cmake ${BASEPATH} -DGPUACCELERATED=1 -DGPU_COMPUTE_CAPABILITY=70 -DMULTITHREADED=0
 cmake ${BASEPATH}
 make -j12

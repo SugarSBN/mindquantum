@@ -19,7 +19,7 @@ from .basic import NoneParameterGate
 from .. import mqbackend as mb
 
 
-#TODO:  🔥🔥🔥🔥🔥《测量相关文档开发》↪️1.编写Measure门的文档
+#TODO: 🔥🔥🔥🔥🔥《测量相关文档开发》↪️1.编写Measure门的文档
 class Measure(NoneParameterGate):
     """Measurement gate"""
     def __init__(self, name=""):
@@ -76,7 +76,7 @@ class Measure(NoneParameterGate):
         raise NotImplementedError
 
 
-##TODO:  🔥🔥🔥🔥🔥《测量相关文档开发》↪️1.编写MeasureResult的文档
+##TODO: 🔥🔥🔥🔥🔥《测量相关文档开发》↪️1.编写MeasureResult的文档
 class MeasureResult:
     """Measurement result container"""
     def __init__(self):
