@@ -127,7 +127,7 @@ match with circuit parameters ({len(circuit.params_name)}, )")
 
     def apply_hamiltonian(self, hamiltonian: Hamiltonian):
         """apply hamiltonian"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️6.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数时候一致
+        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️6.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数是否一致
         if not isinstance(hamiltonian, Hamiltonian):
             raise TypeError(
                 f"hamiltonian requires a Hamiltonian, but got {type(hamiltonian)}"
@@ -136,7 +136,7 @@ match with circuit parameters ({len(circuit.params_name)}, )")
 
     def get_expectation(self, hamiltonian):
         """get expectation"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️7.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数时候一致
+        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️7.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数是否一致
         return self.sim.get_expectation(hamiltonian.get_cpp_obj())
 
     def get_qs(self):
