@@ -17,6 +17,7 @@
 from collections.abc import Iterable
 from typing import List
 import copy
+import html
 import numpy as np
 from projectq.ops import QubitOperator as pq_operator
 from openfermion.ops import QubitOperator as of_operator
@@ -30,7 +31,7 @@ from mindquantum.gate import Hamiltonian
 from mindquantum.gate import Measure
 import mindquantum.gate as G
 from mindquantum.gate.basic import _check_gate_type
-from mindquantum.utils import bprint
+from mindquantum.utils import bprint, brick_model
 from mindquantum.parameterresolver import ParameterResolver as PR
 
 GateSeq = List[BasicGate]
@@ -352,14 +353,20 @@ class Circuit(list):
         return self
 
     def __str__(self):
-        return '\n'.join(repr(i) for i in self)
+        return brick_model(self)
 
     def __repr__(self):
         return self.__str__()
 
+    def _repr_html_(self):
+        s = html.escape(brick_model(self))
+        return f'<pre style="overflow: auto; white-space: pre;">{s}</pre>'
+
     @property
     def n_qubits(self):
-        return max(self.all_qubits.keys()) + 1
+        if self.all_qubits:
+            return max(self.all_qubits.keys()) + 1
+        return 0
 
     def summary(self, show=True):
         """
@@ -481,9 +488,8 @@ class Circuit(list):
                     coeff = gate.coeff.combination(pr)
                 else:
                     coeff = 1 * gate.coeff
-                circuit += gate.__class__(coeff).on(
-                    gate.obj_qubits,
-                    gate.ctrl_qubits)
+                circuit += gate.__class__(coeff).on(gate.obj_qubits,
+                                                    gate.ctrl_qubits)
         return circuit
 
     def get_cpp_obj(self, hermitian=False):

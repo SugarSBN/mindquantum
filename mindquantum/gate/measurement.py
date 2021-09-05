@@ -25,6 +25,7 @@ class Measure(NoneParameterGate):
     def __init__(self, name=""):
         self.key = name
         NoneParameterGate.__init__(self, name)
+        self.name = 'M'
 
     def get_cpp_obj(self):
         out = mb.get_measure_gate(self.key)
