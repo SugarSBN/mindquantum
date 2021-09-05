@@ -20,6 +20,7 @@ from abc import abstractmethod
 from collections.abc import Iterable
 import numpy as np
 from mindquantum.parameterresolver import ParameterResolver as PR
+from mindquantum.utils.f import _common_exp
 from .. import mqbackend as mb
 
 HERMITIAN_PROPERTIES = {
@@ -228,6 +229,7 @@ class NoneParameterGate(BasicGate):
         """Check obj qubit number"""
         n_qubits_exp = np.log2(len(self.matrix_value)).astype(int)
         n_qubits = len(self.obj_qubits)
+        self.n_qubits = n_qubits_exp
         if n_qubits_exp != n_qubits:
             raise ValueError(
                 f"obj_qubits of {self.name} requires {n_qubits_exp} qubits, but get {n_qubits}"
@@ -247,7 +249,7 @@ class ParameterGate(NoneParameterGate, BasicGate):
         if isinstance(coeff, (int, float, complex)):
             NoneParameterGate.__init__(self, name)
             self.coeff = coeff
-            self.str = self.str + "({})".format(round(self.coeff, 3))
+            self.str = self.str + "({})".format(_common_exp(self.coeff, 3))
         else:
             BasicGate.__init__(self, name, True)
             if coeff is None:
@@ -274,7 +276,7 @@ but get {}".format(type(coeff)))
             if self.parameterized:
                 self.str = f'{self.name}({self.coeff.expression()})'
             else:
-                self.str = f'{self.name}({round(self.coeff, 3)})'
+                self.str = f'{self.name}({_common_exp(self.coeff, 3)})'
         else:
             if self.parameterized:
                 self.str = self.str[:len(
@@ -282,7 +284,7 @@ but get {}".format(type(coeff)))
                     + '|' + self.str[len(self.name) + 1:]
             else:
                 self.str = self.str[:len(
-                    self.name) + 1] + str(round(self.coeff, 3))\
+                    self.name) + 1] + str(_common_exp(self.coeff, 3))\
                     + '|' + self.str[len(self.name) + 1:]
 
     @abstractmethod
@@ -519,6 +521,7 @@ class IntrinsicOneParaGate(ParameterGate):
         """Check obj qubit number"""
         n_qubits = len(self.obj_qubits)
         n_qubits_exp = np.log2(len(self._matrix(0))).astype(int)
+        self.n_qubits = n_qubits_exp
         if n_qubits_exp != n_qubits:
             raise ValueError(
                 f"obj_qubits of {self.name} requires {n_qubits_exp} qubits, but get {n_qubits}"
