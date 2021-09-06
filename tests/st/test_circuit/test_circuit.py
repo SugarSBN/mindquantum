@@ -28,7 +28,7 @@ def test_time_evolution():
     h = QubitOperator('Z0 Z1', 'p')
     circ = TimeEvolution(h).circuit
     circ_exp = Circuit([G.X.on(1, 0), G.RZ({'p': 2}).on(1), G.X.on(1, 0)])
-    assert circ == circ_exp
+    assert circ.__repr__() == circ_exp.__repr__()
 
 
 def test_circuit():
@@ -92,12 +92,14 @@ def test_swappart():
 def test_decompose_single_term_time_evolution():
     circ = decompose_single_term_time_evolution(QubitOperator('Z0 Z1'),
                                                 {'a': 1})
+    circ = circ.remove_barrier()
     assert circ == Circuit([G.X.on(1, 0), G.RZ({'a': 2}).on(1), G.X.on(1, 0)])
 
 
 def test_generate_uccsd():
     circ, init_amp, params_name, ham, n_q, n_e = generate_uccsd(
         './tests/st/LiH.hdf5')
+    circ = circ.remove_barrier()
     assert len(circ) == 4416
     assert circ[2000] == G.X.on(9, 8)
     assert np.allclose(init_amp[-5], 0.001687182323430231)

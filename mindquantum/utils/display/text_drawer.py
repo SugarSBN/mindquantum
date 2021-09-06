@@ -23,6 +23,7 @@ _text_drawer_config = {
     'v_n': 1,
     'swap_mask': ['✖', '✖'],  # ✖, ⨯⨯
     'edge_num': 2,
+    'barrier': '‖'
 }
 
 _text_drawer_config['edge'] = _text_drawer_config[
@@ -39,12 +40,16 @@ def _get_qubit_range(gate):
 
 def brick_model(circ):
     """Split a circuit into layers."""
+    import mindquantum.gate as G
     n = circ.n_qubits
     v_n = _text_drawer_config['v_n']
     blocks = []
     qubit_hight = np.zeros(n, dtype=int)
     for gate in circ:
-        qrange = _get_qubit_range(gate)
+        if isinstance(gate, G.BarrierGate):
+            qrange = range(n)
+        else:
+            qrange = _get_qubit_range(gate)
         max_hight = np.max(qubit_hight[qrange])
         if len(blocks) <= max_hight:
             blocks.append([])
@@ -70,6 +75,8 @@ def brick_model(circ):
 def _single_gate_drawer(gate):
     """_single_gate_drawer"""
     import mindquantum.gate as G
+    if isinstance(gate, G.CNOTGate):
+        gate = G.X.on(*gate.obj_qubits)
     main_text = gate.name
     if isinstance(gate, G.SWAPGate):
         main_text = _text_drawer_config['swap_mask'][0]
@@ -90,8 +97,17 @@ def _single_gate_drawer(gate):
 
 def _single_block_drawer(block, n_qubits):
     """single block drawer"""
+    import mindquantum.gate as G
     v_n = _text_drawer_config['v_n']
     text_gates = {}
+    if isinstance(block[0], G.BarrierGate):
+        if not block[0].show:
+            tmp = ''
+        else:
+            tmp = _text_drawer_config['barrier']
+        for i in range((n_qubits - 1) * v_n + n_qubits):
+            text_gates[i] = tmp
+        return text_gates
     for gate in block:
         text_gate = _single_gate_drawer(gate)
         qrange = _get_qubit_range(gate)

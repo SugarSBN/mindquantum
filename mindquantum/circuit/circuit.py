@@ -492,12 +492,26 @@ class Circuit(list):
                                                     gate.ctrl_qubits)
         return circuit
 
+    def remove_barrier(self):
+        """Remove all barrier gates"""
+        circ = Circuit()
+        for g in self:
+            if not isinstance(g, G.BarrierGate):
+                circ += g
+        return circ
+
     def get_cpp_obj(self, hermitian=False):
         """Get cpp obj of circuit."""
         if not self.has_cpp_obj:
             self.has_cpp_obj = True
-            self.cpp_obj = [i.get_cpp_obj() for i in self]
-            self.herm_cpp_obj = [i.get_cpp_obj() for i in self.hermitian]
+            self.cpp_obj = [
+                i.get_cpp_obj() for i in self
+                if not isinstance(i, G.BarrierGate)
+            ]
+            self.herm_cpp_obj = [
+                i.get_cpp_obj() for i in self.hermitian
+                if not isinstance(i, G.BarrierGate)
+            ]
 
         if hasattr(self, 'cpp_obj') and hasattr(self, 'herm_cpp_obj'):
             if hermitian:

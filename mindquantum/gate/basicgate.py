@@ -22,6 +22,24 @@ from .basic import IntrinsicOneParaGate
 from .basic import NoneParameterGate
 
 
+class BarrierGate(NoneParameterGate):
+    """
+    BARRIER gate do nothing but set a barrier for drawing circuit.
+    """
+    def __init__(self, show=True):
+        NoneParameterGate.__init__(self, 'BARRIER')
+        self.show = show
+
+    def get_cpp_obj(self):
+        return None
+
+    def hermitian(self):
+        return BarrierGate(self.show)
+
+    def on(self, obj_qubits, ctrl_qubits=None):
+        raise NotImplementedError
+
+
 class CNOTGate(NoneParameterGate):
     r"""
     Control-X gate.
@@ -521,3 +539,4 @@ H = HGate()
 S = PhaseShift(np.pi / 2)
 SWAP = SWAPGate()
 CNOT = CNOTGate()
+BARRIER = BarrierGate()
