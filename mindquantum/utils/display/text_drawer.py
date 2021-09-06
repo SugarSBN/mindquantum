@@ -16,11 +16,12 @@
 import numpy as np
 
 _text_drawer_config = {
-    'ctrl_mask': '*',  #⨉
+    'ctrl_mask': '●',  #⨉
     'circ_line': '─',
-    'ctrl_line': '|',
+    'ctrl_line': '│',
+    'cross_mask': '┼',
     'v_n': 1,
-    'swap_mask': ['*', '*'],
+    'swap_mask': ['✖', '✖'],  # ✖, ⨯⨯
     'edge_num': 2,
 }
 
@@ -70,6 +71,8 @@ def _single_gate_drawer(gate):
     """_single_gate_drawer"""
     import mindquantum.gate as G
     main_text = gate.name
+    if isinstance(gate, G.SWAPGate):
+        main_text = _text_drawer_config['swap_mask'][0]
     if issubclass(gate.__class__, G.ParameterGate):
         main_text = str(gate.__class__(gate.coeff))
     main_text = _text_drawer_config['edge'] + main_text + _text_drawer_config[
@@ -97,8 +100,9 @@ def _single_block_drawer(block, n_qubits):
             if q in qrange:
                 text_gates[ind] = text_gate[q]
             else:
-                text_gates[
-                    ind] = _text_drawer_config['circ_line'] * text_gate['len']
+                text_gates[ind] = _text_drawer_config['cross_mask']
+                text_gates[ind] = text_gates[ind].center(
+                    text_gate['len'], _text_drawer_config['circ_line'])
         for q in range(min(qrange), max(qrange)):
             for i in range(v_n):
                 ind = q * (v_n + 1) + i + 1
