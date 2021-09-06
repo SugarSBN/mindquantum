@@ -29,6 +29,7 @@ from mindquantum.gate import H
 from mindquantum.gate import X
 from mindquantum.gate import RZ
 from mindquantum.gate import RY
+from mindquantum.gate import BarrierGate
 from mindquantum.parameterresolver import ParameterResolver
 from .circuit import Circuit
 
@@ -240,8 +241,10 @@ def decompose_single_term_time_evolution(term, para):
                 rxs.append(len(out))
                 out.append(RX(np.pi / 2).on(index))
 
+        out.append(BarrierGate(False))
         for i in range(len(term) - 1):
             out.append(X.on(term[i + 1][0], term[i][0]))
+        out.append(BarrierGate(False))
         if isinstance(para, (dict, ParameterResolver)):
             out.append(RZ({i: 2 * j for i, j in para.items()}).on(term[-1][0]))
         else:

@@ -19,6 +19,7 @@ from mindquantum.gate import Hamiltonian
 from mindquantum.parameterresolver import ParameterResolver
 from mindquantum.gate import MeasureResult
 from mindquantum.gate import Measure
+from mindquantum.gate import BarrierGate
 from .. import mqbackend as mb
 
 SUPPORTED_SIMULATOR = ['projectq', 'quest']
@@ -58,14 +59,16 @@ class Simulator:
     def apply_gate(self, gate, parameter_resolver=None):
         """apply gate"""
         #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️3.对量子门和参数解析器进行校验
-        if parameter_resolver is None:
-            if gate.parameterized:
-                raise ValueError(
-                    "apply a parameterized gate needs a parameter_resolver")
-            self.sim.apply_gate(gate.get_cpp_obj())
-        else:
-            self.sim.apply_gate(gate.get_cpp_obj(),
-                                parameter_resolver.get_cpp_obj(), False)
+        if not isinstance(gate, BarrierGate):
+            if parameter_resolver is None:
+                if gate.parameterized:
+                    raise ValueError(
+                        "apply a parameterized gate needs a parameter_resolver"
+                    )
+                self.sim.apply_gate(gate.get_cpp_obj())
+            else:
+                self.sim.apply_gate(gate.get_cpp_obj(),
+                                    parameter_resolver.get_cpp_obj(), False)
 
     def apply_circuit(self, circuit: Circuit, parameter_resolver=None):
         """apply circuit"""

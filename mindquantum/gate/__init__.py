@@ -29,6 +29,7 @@ from .basicgate import ZGate
 from .basicgate import HGate
 from .basicgate import SWAPGate
 from .basicgate import CNOTGate
+from .basicgate import BarrierGate
 from .basicgate import H
 from .basicgate import CNOT
 from .basicgate import X
@@ -38,6 +39,7 @@ from .basicgate import I
 from .basicgate import S
 from .basicgate import Power
 from .basicgate import SWAP
+from .basicgate import BARRIER
 from .basicgate import UnivMathGate
 from .basicgate import RX
 from .basicgate import RY
@@ -56,5 +58,5 @@ __all__ = [
     'H', 'CNOT', 'X', 'Y', 'Z', 'I', 'S', 'Power', 'SWAP', 'UnivMathGate',
     'RX', 'RY', 'RZ', 'PhaseShift', 'XX', 'YY', 'ZZ', 'IGate', 'XGate',
     'YGate', 'ZGate', 'HGate', 'SWAPGate', 'CNOTGate', 'Hamiltonian',
-    'Projector', 'Measure', 'MeasureResult'
+    'Projector', 'Measure', 'MeasureResult', 'BarrierGate', 'BARRIER'
 ]
