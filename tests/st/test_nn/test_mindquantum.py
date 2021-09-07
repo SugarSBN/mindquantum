@@ -42,7 +42,7 @@ def test_mindquantumlayer_forward():
                                             circ,
                                             encoder_params_name=['e1'],
                                             ansatz_params_name=['a'])
-    net = MQLayer(f_g_ops, 1)
+    net = MQLayer(f_g_ops)
     encoder_data = ms.Tensor(np.array([[0.5]]).astype(np.float32))
     res = net(encoder_data)
     assert round(float(res.asnumpy()[0, 0]), 3) == 0.878
@@ -61,7 +61,7 @@ def test_vqe_convergence():
     sim = Simulator('projectq', vqe_circuit.n_qubits)
     f_g_ops = sim.get_expectation_with_grad(
         Hamiltonian(hamiltonian_qubitop.real), vqe_circuit)
-    molecule_pqcnet = MQAnsatzOnlyLayer(f_g_ops, len(vqe_circuit.params_name))
+    molecule_pqcnet = MQAnsatzOnlyLayer(f_g_ops)
     optimizer = ms.nn.Adagrad(molecule_pqcnet.trainable_params(),
                               learning_rate=4e-2)
     train_pqcnet = ms.nn.TrainOneStepCell(molecule_pqcnet, optimizer)

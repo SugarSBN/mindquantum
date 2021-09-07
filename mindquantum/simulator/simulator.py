@@ -259,7 +259,10 @@ match with circuit parameters ({len(circuit.params_name)}, )")
             g = res[:, :, 1:]
             return f, g
 
-        return grad_ops
+        grad_wrapper = GradOpsWrapper(grad_ops, hams, circ_right, circ_left,
+                                      encoder_params_name, ansatz_params_name,
+                                      parallel_worker)
+        return grad_wrapper
 
 
 def _check_encoder(data, encoder_params_size):
@@ -304,3 +307,19 @@ def _thread_balance(n_prs, n_meas, parallel_worker):
             mea_threads = min(n_meas, parallel_worker)
             batch_threads = min(n_prs, max(1, parallel_worker // mea_threads))
     return batch_threads, mea_threads
+
+
+class GradOpsWrapper:
+    """GradOpsWrapper"""
+    def __init__(self, grad_ops, hams, circ_right, circ_left,
+                 encoder_params_name, ansatz_params_name, parallel_worker):
+        self.grad_ops = grad_ops
+        self.hams = hams
+        self.circ_right = circ_right
+        self.circ_left = circ_left
+        self.encoder_params_name = encoder_params_name
+        self.ansatz_params_name = ansatz_params_name
+        self.parallel_worker = parallel_worker
+
+    def __call__(self, *args):
+        return self.grad_ops(*args)

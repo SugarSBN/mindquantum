@@ -35,7 +35,7 @@ def test_max_2_sat():
     ham = max2sat.hamiltonian
     f_g_ops = sim.get_expectation_with_grad(Hamiltonian(ham), max2sat.circuit)
     ms.set_seed(42)
-    net = MQAnsatzOnlyLayer(f_g_ops, len(max2sat.circuit.params_name))
+    net = MQAnsatzOnlyLayer(f_g_ops)
     opt = ms.nn.Adagrad(net.trainable_params(), learning_rate=4e-1)
     train_net = ms.nn.TrainOneStepCell(net, opt)
     ret = 0

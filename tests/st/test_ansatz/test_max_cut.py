@@ -35,7 +35,7 @@ def test_max_cut():
     ham = maxcut.hamiltonian
     f_g_ops = sim.get_expectation_with_grad(Hamiltonian(-ham), maxcut.circuit)
     ms.set_seed(42)
-    net = MQAnsatzOnlyLayer(f_g_ops, len(maxcut.circuit.params_name))
+    net = MQAnsatzOnlyLayer(f_g_ops)
     opti = ms.nn.Adagrad(net.trainable_params(), learning_rate=4e-1)
     train_net = ms.nn.TrainOneStepCell(net, opti)
     for i in range(50):
