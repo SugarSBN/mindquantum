@@ -61,7 +61,7 @@ def test_uccsd():
     sim = Simulator('projectq', total_circuit.n_qubits)
     f_g_ops = sim.get_expectation_with_grad(Hamiltonian(ham.real),
                                             total_circuit)
-    net = MQAnsatzOnlyLayer(f_g_ops, len(total_circuit.params_name))
+    net = MQAnsatzOnlyLayer(f_g_ops)
     opti = ms.nn.Adagrad(net.trainable_params(), learning_rate=4e-2)
     train_net = ms.nn.TrainOneStepCell(net, opti)
     for i in range(50):

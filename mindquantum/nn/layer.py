@@ -25,9 +25,10 @@ from .operations import MQN2AnsatzOnlyOps
 
 class MQLayer(nn.Cell):
     """MindQuantum trainable layer"""
-    def __init__(self, expectation_with_grad, weight_size, weight='normal'):
+    def __init__(self, expectation_with_grad, weight='normal'):
         super(MQLayer, self).__init__()
         self.evolution = MQOps(expectation_with_grad)
+        weight_size = len(self.evolution.expectation_with_grad.ansatz_params_name)
         self.weight = Parameter(initializer(weight,
                                             weight_size,
                                             dtype=ms.float32),
@@ -39,9 +40,10 @@ class MQLayer(nn.Cell):
 
 class MQN2Layer(nn.Cell):
     """MindQuantum norm square trainable layer"""
-    def __init__(self, expectation_with_grad, weight_size, weight='normal'):
+    def __init__(self, expectation_with_grad, weight='normal'):
         super(MQN2Layer, self).__init__()
         self.evolution = MQN2Ops(expectation_with_grad)
+        weight_size = len(self.evolution.expectation_with_grad.ansatz_params_name)
         self.weight = Parameter(initializer(weight,
                                             weight_size,
                                             dtype=ms.float32),
@@ -53,9 +55,10 @@ class MQN2Layer(nn.Cell):
 
 class MQAnsatzOnlyLayer(nn.Cell):
     """MindQuantum ansatz only trainable layer"""
-    def __init__(self, expectation_with_grad, weight_size, weight='normal'):
+    def __init__(self, expectation_with_grad, weight='normal'):
         super(MQAnsatzOnlyLayer, self).__init__()
         self.evolution = MQAnsatzOnlyOps(expectation_with_grad)
+        weight_size = len(self.evolution.expectation_with_grad.ansatz_params_name)
         self.weight = Parameter(initializer(weight,
                                             weight_size,
                                             dtype=ms.float32),
@@ -67,9 +70,10 @@ class MQAnsatzOnlyLayer(nn.Cell):
 
 class MQN2AnsatzOnlyLayer(nn.Cell):
     """MindQuantum norm square ansatz only trainable layer"""
-    def __init__(self, expectation_with_grad, weight_size, weight='normal'):
+    def __init__(self, expectation_with_grad, weight='normal'):
         super(MQN2AnsatzOnlyLayer, self).__init__()
         self.evolution = MQN2AnsatzOnlyOps(expectation_with_grad)
+        weight_size = len(self.evolution.expectation_with_grad.ansatz_params_name)
         self.weight = Parameter(initializer(weight,
                                             weight_size,
                                             dtype=ms.float32),

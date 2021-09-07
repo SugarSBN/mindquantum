@@ -16,5 +16,6 @@
 
 from .simulator import Simulator
 from .simulator import get_supported_simulator
+from .simulator import GradOpsWrapper
 
-__all__ = ["Simulator", "get_supported_simulator"]
+__all__ = ["Simulator", "get_supported_simulator", "GradOpsWrapper"]

@@ -43,7 +43,7 @@ def test_mindquantumlayer():
                                             circ,
                                             encoder_params_name=['e1', 'e2'],
                                             ansatz_params_name=['p1'])
-    net = MQLayer(f_g_ops, 1)
+    net = MQLayer(f_g_ops)
     encoder_data = ms.Tensor(np.array([[0.1, 0.2]]).astype(np.float32))
     res = net(encoder_data)
     assert round(float(res.asnumpy()[0, 0]), 6) == round(float(0.9949919), 6)
