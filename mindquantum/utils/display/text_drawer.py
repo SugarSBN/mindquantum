@@ -50,7 +50,7 @@ def brick_model(circ):
             qrange = range(n)
         else:
             qrange = _get_qubit_range(gate)
-        max_hight = np.max(qubit_hight[qrange])
+        max_hight = np.max(qubit_hight[range(min(qrange), max(qrange) + 1)])
         if len(blocks) <= max_hight:
             blocks.append([])
         blocks[max_hight].append(gate)
