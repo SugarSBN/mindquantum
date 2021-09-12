@@ -37,6 +37,7 @@ class Simulator:
         #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️1.对后端进行校验
         self.backend = backend
         self.seed = seed
+        self.n_qubits = n_qubits
         if backend == 'projectq':
             self.sim = mb.projectq(seed, n_qubits)
         elif backend == 'quest':
@@ -145,6 +146,39 @@ match with circuit parameters ({len(circuit.params_name)}, )")
     def get_qs(self):
         """get quantum state"""
         return np.array(self.sim.get_qs())
+
+    def set_qs(self, vec):
+        """
+        Set quantum state for this simulation.
+
+        Args:
+            vec (numpy.ndarray): the quantum state that you want.
+
+        Examples:
+            >>> from mindquantum import Simulator
+            >>> import numpy as np
+            >>> sim = Simulator('projectq', 1)
+            >>> sim.get_qs()
+            array([1.+0.j, 0.+0.j])
+            >>> sim.set_qs(np.array([1, 1]))
+            >>> sim.get_qs()
+            array([0.70710678+0.j, 0.70710678+0.j])
+        """
+        if not isinstance(vec, np.ndarray):
+            raise TypeError(
+                f"quantum state must be a ndarray, but get {type(vec)}")
+        if len(vec.shape) != 1:
+            raise ValueError(
+                f"vec requires a 1-dimensional array, but get {vec.shape}")
+        n_qubits = np.log2(vec.shape[0])
+        if n_qubits % 1 != 0:
+            raise ValueError(f"vec size {vec.shape[0]} is not power of 2")
+        n_qubits = int(n_qubits)
+        if self.n_qubits != n_qubits:
+            raise ValueError(
+                f"{n_qubits} qubits vec does not match with simulation qubits ({self.n_qubits})"
+            )
+        self.sim.set_qs(vec / np.sqrt(np.sum(vec**2)))
 
     def get_expectation_with_grad(self,
                                   hams: Hamiltonian,
