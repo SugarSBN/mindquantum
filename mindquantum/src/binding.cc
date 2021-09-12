@@ -138,6 +138,7 @@ PYBIND11_MODULE(mqbackend, m) {
       .def("PrintInfo", &Projectq<MT>::PrintInfo)
       .def("run", &Projectq<MT>::run)
       .def("get_qs", &Projectq<MT>::cheat)
+      .def("set_qs", &Projectq<MT>::SetState)
       .def("hermitian_measure_with_grad",
            py::overload_cast<
                const VT<Hamiltonian<MT>> &, const VT<BasicGate<MT>> &,

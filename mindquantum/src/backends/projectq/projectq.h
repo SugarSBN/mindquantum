@@ -84,6 +84,10 @@ class Projectq : public Simulator {
 
   void InitializeSimulator(CTP<T> vec) {}
 
+  void SetState(VT<CT<T>> vec) {
+    set_wavefunction(reinterpret_cast<calc_type *>(vec.data()), ordering_);
+  }
+
   void ApplyGate(const BasicGate<T> &gate) {
     Projectq::apply_controlled_gate(MCast<T>(gate.base_matrix_.matrix_),
                                     VCast(gate.obj_qubits_),

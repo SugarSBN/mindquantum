@@ -76,3 +76,12 @@ def test_apply_circuit_and_hermitian():
     v = m[:, 0]
     assert np.allclose(v, v1)
     assert np.allclose(v, v2)
+
+
+def test_set_and_get():
+    sim = Simulator('projectq', 1)
+    qs1 = sim.get_qs()
+    assert np.allclose(qs1, np.array([1, 0]))
+    sim.set_qs(np.array([1, 1]))
+    qs2 = sim.get_qs()
+    assert np.allclose(qs2, np.array([1, 1]) / np.sqrt(2))
