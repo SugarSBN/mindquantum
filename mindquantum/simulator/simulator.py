@@ -16,6 +16,7 @@
 import numpy as np
 from mindquantum.circuit import Circuit
 from mindquantum.gate import Hamiltonian
+from mindquantum.gate.hamiltonian import MODE
 from mindquantum.parameterresolver import ParameterResolver
 from mindquantum.gate import MeasureResult
 from mindquantum.gate import Measure
@@ -30,11 +31,35 @@ def get_supported_simulator():
     return SUPPORTED_SIMULATOR
 
 
-#TODO: 🔥🔥🔥🔥🔥《模拟器相关文档开发》↪️编写模拟器的文档
 class Simulator:
-    """Simulator"""
-    def __init__(self, backend: str, n_qubits: int, seed: int = 1):
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️1.对后端进行校验
+    """
+    Quantum simulator that simulate quantum circuit.
+
+    Args:
+        backend (str): which backend you want. The supported backend can be found
+            in SUPPORTED_SIMULATOR
+        n_qubits (int): number of quantum simulator.
+        seed (int): the random seed for this simulator. Default: 42.
+
+    Examples:
+        >>> from mindquantum import Simulator
+        >>> from mindquantum import qft
+        >>> sim = Simulator('projectq', 2)
+        >>> sim.apply_circuit(qft(range(2)))
+        >>> sim.get_qs()
+        array([0.5+0.j, 0.5+0.j, 0.5+0.j, 0.5+0.j])
+    """
+    def __init__(self, backend, n_qubits, seed=42):
+        if not isinstance(backend, str):
+            raise TypeError(f"backend need a string, but get {type(backend)}")
+        if backend not in SUPPORTED_SIMULATOR:
+            raise ValueError(f"backend {backend} not supported!")
+        if not isinstance(n_qubits, int) or n_qubits < 0:
+            raise ValueError(
+                f"n_qubits of simulator should be a non negative int, but get {n_qubits}"
+            )
+        if not isinstance(seed, int) or seed < 0 or seed > 2**32 - 1:
+            raise ValueError(f"seed must be between 0 and 2**32 - 1")
         self.backend = backend
         self.seed = seed
         self.n_qubits = n_qubits
@@ -44,17 +69,61 @@ class Simulator:
             self.sim = mb.quest(n_qubits)
 
     def reset(self):
-        """reset simulator"""
+        """
+        Reset simulator to zero state.
+
+        Examples:
+            >>> from mindquantum import Simulator
+            >>> from mindquantum import qft
+            >>> sim = Simulator('projectq', 2)
+            >>> sim.apply_circuit(qft(range(2)))
+            >>> sim.reset()
+            >>> sim.get_qs()
+            array([1.+0.j, 0.+0.j, 0.+0.j, 0.+0.j])        
+        """
         self.sim.reset()
 
     def flush(self):
-        """flush"""
+        """
+        Flush gate that works for projectq simulator. The projectq simulator
+        will cache several gate and fushion these gate into a bigger gate, and
+        than act on the quantum state. The flush command will ask the simulator
+        to fushion currently stored gate and act on the quantum state.
+
+        Examples:
+            >>> from mindquantum import Simulator
+            >>> from mindquantum import H
+            >>> sim = Simulator('projectq', 1)
+            >>> sim.apply_gate(H.on(0))
+            >>> sim.flush()
+        """
         if self.backend == 'projectq':
             self.sim.run()
 
-    def apply_measure(self, gate: Measure):
-        """apply measure gate"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️2.对量子门进行校验
+    def apply_measure(self, gate):
+        """
+        Apply a measure gate.
+
+        Args:
+            gate (Measure): a measure gate.
+
+        Returns:
+            int, the qubit measurement result.
+
+        Examples:
+            >>> from mindquantum import Simulator
+            >>> from mindquantum import Measure, H
+            >>> sim = Simulator('projectq', 1)
+            >>> sim.apply_gate(H.on(0))
+            >>> sim.apply_measure(Measure().on(0))
+            1
+            >>> sim.get_qs()
+            array([0.+0.j, 1.+0.j])
+        """
+        if not isinstance(gate, Measure):
+            raise TypeError(
+                f"simulator apply_measure requires a Measure, but get {type(gate)}"
+            )
         return self.sim.apply_measure(gate.get_cpp_obj())
 
     def apply_gate(self, gate, parameter_resolver=None):
@@ -103,13 +172,40 @@ match with circuit parameters ({len(circuit.params_name)}, )")
             self.sim.apply_circuit(circuit.get_cpp_obj(),
                                    parameter_resolver.get_cpp_obj())
 
-    def sampling(self,
-                 circuit: Circuit,
-                 parameter_resolver=None,
-                 shots: int = 1,
-                 seed: int = None):
-        """samping the measurement"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️5.对量子线路和参数解析器等进行校验
+    def sampling(self, circuit, parameter_resolver=None, shots=1, seed=None):
+        """
+        Samping the measure qubit in circuit.
+
+        Args:
+            circuit (Circuit): The circuit that you want to evolution and do sampling.
+            Parameter_resolver (Union[None, dict, ParameterResolver]): The parameter
+                resolver for this circuit, if this circuit is a parameterized circuit.
+                Default: None.
+            shots (int): How many shots you want to sampling this circuit. Default: 1
+            seed (int): Random seed for random sampling. Default: None.
+
+        Returns:
+            MeasureResult, the measure result of sampling.
+
+        Examples:
+            >>> from mindquantum import Circuit, Measure
+            >>> from mindquantum import Simulator
+            >>> circ = Circuit().ry('a', 0).ry('b', 1)
+            >>> circ += Measure('q0_0').on(0)
+            >>> circ += Measure('q0_1').on(0)
+            >>> circ += Measure('q1').on(1)
+            >>> sim = Simulator('projectq', circ.n_qubits)
+            >>> res = sim.sampling(circ, {'a': 1.1, 'b': 2.2}, shots=100, seed=42)
+            >>> res
+            {'000': 17, '011': 8, '100': 49, '111': 26}
+        """
+        if not isinstance(circuit, Circuit):
+            raise TypeError(
+                f"sampling circuit need a quantum circuit but get {type(circuit)}"
+            )
+        if not isinstance(shots, int) or shots < 0:
+            raise ValueError(
+                f"sampling shot should be non negative int, but get {shots}")
         if circuit.parameterized:
             if parameter_resolver is None:
                 raise ValueError(
@@ -120,6 +216,8 @@ match with circuit parameters ({len(circuit.params_name)}, )")
             parameter_resolver = ParameterResolver()
         if seed is None:
             seed = self.seed
+        elif not isinstance(seed, int) or seed < 0 or seed > 2**23 - 1:
+            raise ValueError(f"seed must be between 0 and 2**23 - 1")
         res = MeasureResult()
         res.add_measure(circuit.all_measures.keys())
         res.samples = np.array(
@@ -130,21 +228,94 @@ match with circuit parameters ({len(circuit.params_name)}, )")
         return res
 
     def apply_hamiltonian(self, hamiltonian: Hamiltonian):
-        """apply hamiltonian"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️6.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数是否一致
+        """
+        Apply hamiltonian to a simulator, this hamiltonian can be
+        hermitian or non hermitian.
+
+        Notes:
+            The quantum state may be not a normalized quantum state after apply hamiltonian.
+
+        Args:
+            hamiltonian (Hamiltonian): the hamiltonian you want to apply.
+
+        Examples:
+            >>> from mindquantum import Simulator
+            >>> from mindquantum import Circuit, Hamiltonian
+            >>> from mindquantum.ops import QubitOperator
+            >>> import scipy.sparse as sp
+            >>> sim = Simulator('projectq', 1)
+            >>> sim.apply_circuit(Circuit().h(0))
+            >>> sim.get_qs()
+            array([0.70710678+0.j, 0.70710678+0.j])
+            >>> ham1 = Hamiltonian(QubitOperator('Z0'))
+            sim.apply_hamiltonian(ham1)
+            >>> sim.get_qs()
+            array([ 0.70710678+0.j, -0.70710678+0.j])
+
+            >>> sim.reset()
+            >>> ham2 = Hamiltonian(sp.csr_matrix([[1, 2], [3, 4]]))
+            >>> sim.apply_hamiltonian(ham2)
+            >>> sim.get_qs()
+            array([1.+0.j, 3.+0.j])
+        """
+
         if not isinstance(hamiltonian, Hamiltonian):
             raise TypeError(
                 f"hamiltonian requires a Hamiltonian, but got {type(hamiltonian)}"
             )
+        if hamiltonian.how_to != MODE['origin']:
+            if hamiltonian.n_qubits != self.n_qubits:
+                raise ValueError(
+                    f"Hamiltonian qubits is {hamiltonian.n_qubits}, not match \
+with simulator qubits number {self.n_qubits}")
         self.sim.apply_hamiltonian(hamiltonian.get_cpp_obj())
 
     def get_expectation(self, hamiltonian):
-        """get expectation"""
-        #TODO: 🔥🔥🔥🔥🔥《模拟器接口校验》↪️7.对哈密顿量进行校验，检查哈密顿量比特数跟模拟器比特数是否一致
+        """
+        Get expectation of the given hamiltonian. The hamiltonian could be non hermitian.
+
+        .. math::
+
+            E = \left<\psi\right|H\left|\psi\right>
+
+        Args:
+            hamiltonian (Hamiltonian): The hamiltonian you want to get expectation.
+
+        Examples:
+            >>> from mindquantum.ops import QubitOperator
+            >>> from mindquantum import Circuit, Simulator
+            >>> from mindquantum import Hamiltonian
+            >>> sim = Simulator('projectq', 1)
+            >>> sim.apply_circuit(Circuit().ry(1.2, 0))
+            >>> ham = Hamiltonian(QubitOperator('Z0'))
+            >>> sim.get_expectation(ham)
+            (0.36235775447667357+0j)
+        """
+        if not isinstance(hamiltonian, Hamiltonian):
+            raise TypeError(
+                f"hamiltonian requires a Hamiltonian, but got {type(hamiltonian)}"
+            )
+        if hamiltonian.how_to != MODE['origin']:
+            if hamiltonian.n_qubits != self.n_qubits:
+                raise ValueError(
+                    f"Hamiltonian qubits is {hamiltonian.n_qubits}, not match \
+with simulator qubits number {self.n_qubits}")
         return self.sim.get_expectation(hamiltonian.get_cpp_obj())
 
     def get_qs(self):
-        """get quantum state"""
+        """
+        Get current quantum state of this simulator.
+
+        Returns:
+            numpy.ndarray, the current quantum state.
+
+        Examples:
+            >>> from mindquantum import qft, Simulator
+            >>> sim = Simulator('projectq', 2)
+            >>> sim.apply_circuit(qft(range(2)))
+            >>> sim.get_qs()
+            array([0.5+0.j, 0.5+0.j, 0.5+0.j, 0.5+0.j])
+        """
         return np.array(self.sim.get_qs())
 
     def set_qs(self, vec):

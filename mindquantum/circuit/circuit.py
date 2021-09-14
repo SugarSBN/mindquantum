@@ -167,12 +167,12 @@ class Circuit(list):
 
 
     Examples:
+        >>> from mindquantum import Circuit, RX, X
         >>> circuit1 = Circuit()
         >>> circuit1 += RX('a').on(0)
         >>> circuit1 *= 2
-        >>> print(circuit1)
-        RX(a|0)
-        RX(a|0)
+        >>> circuit1
+        q0: ──RX(a)────RX(a)──
         >>> circuit2 = Circuit([X.on(0,1)])
         >>> circuit3= circuit1 + circuit2
         >>> assert len(circuit3) == 3
@@ -183,6 +183,10 @@ class Circuit(list):
         |with 1 parameters are  : a.|
         |Number qubit of circuit: 2 |
         =============================
+        >>> circuit3
+        q0: ──RX(a)────RX(a)────X──
+                                │
+        q1: ────────────────────●──
     """
     def __init__(self, gates=None):
         list.__init__([])

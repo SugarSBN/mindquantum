@@ -78,36 +78,14 @@ class Max2SATAnsatz(Ansatz):
 
     Examples:
         >>> from mindquantum.ansatz import Max2SATAnsatz
-        >>> clauses = [(1, 2), (2, -3)]
+        >>> clauses = [(2, -3)]
         >>> max2sat = Max2SATAnsatz(clauses, 2)
         >>> max2sat.circuit
-        H(0)
-        H(1)
-        H(2)
-        RZ(0.25*beta_0|0)
-        RZ(0.5*beta_0|1)
-        X(1 <-: 0)
-        RZ(0.5*beta_0|1)
-        X(1 <-: 0)
-        RZ(-0.25*beta_0|2)
-        X(2 <-: 1)
-        RZ(-0.5*beta_0|2)
-        X(2 <-: 1)
-        RX(alpha_0|0)
-        RX(alpha_0|1)
-        RX(alpha_0|2)
-        RZ(0.25*beta_1|0)
-        RZ(0.5*beta_1|1)
-        X(1 <-: 0)
-        RZ(0.5*beta_1|1)
-        X(1 <-: 0)
-        RZ(-0.25*beta_1|2)
-        X(2 <-: 1)
-        RZ(-0.5*beta_1|2)
-        X(2 <-: 1)
-        RX(alpha_1|0)
-        RX(alpha_1|1)
-        RX(alpha_1|2)
+        q0: ─────────────────────────────────────────────────────────────────────
+
+        q1: ──H────RZ(0.25*beta_0)─────●───────────────────────●────RX(alpha_0)──
+                                       │                       │
+        q2: ──H────RZ(-0.25*beta_0)────X────RZ(-0.5*beta_0)────X────RX(alpha_0)──
 
         >>> max2sat.hamiltonian
         0.5 [] +
