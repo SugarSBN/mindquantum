@@ -29,6 +29,7 @@ from mindquantum.gate import Y
 from mindquantum.gate import Z
 from mindquantum.gate import Hamiltonian
 from mindquantum.gate import Measure
+from mindquantum.gate import BarrierGate
 import mindquantum.gate as G
 from mindquantum.gate.basic import _check_gate_type
 from mindquantum.utils import bprint, brick_model
@@ -619,6 +620,40 @@ class Circuit(list):
         """Add a ZZ gate."""
         self.append(G.ZZ(para).on(obj_qubits, ctrl_qubits))
         return self
+
+    def measure(self, key, obj_qubit=None):
+        """Add a measure gate."""
+        if obj_qubit is None:
+            self.append(Measure().on(key))
+        else:
+            self.append(Measure(key).on(obj_qubit))
+        return self
+
+    def measure_all(self):
+        """Measure all qubits"""
+        from mindquantum import UN
+        self += UN(Measure(), self.n_qubits)
+        return self
+
+    def barrier(self, show=True):
+        """Add a barrier."""
+        self.append(BarrierGate(show))
+        return self
+
+    def un(self, gate, maps_obj, maps_ctrl=None):
+        """
+        Map a quantum gate to different objective qubits and control qubits.
+        Please refers to UN.
+        """
+        from mindquantum import UN
+        self += UN(gate, maps_obj, maps_ctrl)
+        return self
+
+    def get_qs(self, backend='projectq', pr=None, ket=False, seed=42):
+        from mindquantum import Simulator
+        sim = Simulator(backend, self.n_qubits, seed)
+        sim.apply_circuit(self, pr)
+        return sim.get_qs(ket)
 
 
 def pauli_word_to_circuits(qubitops):

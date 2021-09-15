@@ -50,10 +50,11 @@ class Measure(NoneParameterGate):
         #TODO: 🔥🔥🔥🔥🔥《测量相关接口校验》↪️1.对比特位进行校验
         if ctrl_qubits is not None:
             raise ValueError("Measure gate can not have control qubit")
-        self.obj_qubits = [obj_qubits]
-        if not self.key:
-            self.key = str(obj_qubits)
-        return self
+        new_gate = Measure(self.key)
+        new_gate.obj_qubits = [obj_qubits]
+        if not new_gate.key:
+            new_gate.key = str(obj_qubits)
+        return new_gate
 
     def __hash__(self):
         return hash(self.key)
