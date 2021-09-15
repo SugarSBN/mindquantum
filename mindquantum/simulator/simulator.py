@@ -21,6 +21,7 @@ from mindquantum.parameterresolver import ParameterResolver
 from mindquantum.gate import MeasureResult
 from mindquantum.gate import Measure
 from mindquantum.gate import BarrierGate
+from mindquantum.utils import ket_string
 from .. import mqbackend as mb
 
 SUPPORTED_SIMULATOR = ['projectq', 'quest']
@@ -67,6 +68,19 @@ class Simulator:
             self.sim = mb.projectq(seed, n_qubits)
         elif backend == 'quest':
             self.sim = mb.quest(n_qubits)
+
+    def __str__(self):
+        state = self.get_qs()
+        s = f"{self.backend} simulator with {self.n_qubits} qubit{'s' if self.n_qubits > 1 else ''}."
+        s += f"\nCurrent quantum state:\n"
+        if self.n_qubits < 4:
+            s += '\n'.join(ket_string(state))
+        else:
+            s += state.__str__()
+        return s
+
+    def __repr__(self):
+        return self.__str__()
 
     def reset(self):
         """
@@ -302,7 +316,7 @@ with simulator qubits number {self.n_qubits}")
 with simulator qubits number {self.n_qubits}")
         return self.sim.get_expectation(hamiltonian.get_cpp_obj())
 
-    def get_qs(self):
+    def get_qs(self, ket=False):
         """
         Get current quantum state of this simulator.
 
@@ -316,7 +330,10 @@ with simulator qubits number {self.n_qubits}")
             >>> sim.get_qs()
             array([0.5+0.j, 0.5+0.j, 0.5+0.j, 0.5+0.j])
         """
-        return np.array(self.sim.get_qs())
+        state = np.array(self.sim.get_qs())
+        if ket:
+            return '\n'.join(ket_string(state))
+        return state
 
     def set_qs(self, vec):
         """
