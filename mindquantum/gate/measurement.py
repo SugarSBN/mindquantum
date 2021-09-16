@@ -50,10 +50,11 @@ class Measure(NoneParameterGate):
         #TODO: 🔥🔥🔥🔥🔥《测量相关接口校验》↪️1.对比特位进行校验
         if ctrl_qubits is not None:
             raise ValueError("Measure gate can not have control qubit")
-        self.obj_qubits = [obj_qubits]
-        if not self.key:
-            self.key = str(obj_qubits)
-        return self
+        new_gate = Measure(self.key)
+        new_gate.obj_qubits = [obj_qubits]
+        if not new_gate.key:
+            new_gate.key = str(obj_qubits)
+        return new_gate
 
     def __hash__(self):
         return hash(self.key)
@@ -65,7 +66,7 @@ class Measure(NoneParameterGate):
 
     def hermitian(self):
         """Hermitian gate of measure return its self"""
-        return self.__class__(self.name).on(self.obj_qubits[0])
+        return self.__class__(self.key).on(self.obj_qubits[0])
 
     def check_obj_qubits(self):
         if not self.obj_qubits:
@@ -117,3 +118,9 @@ class MeasureResult:
     @property
     def data(self):
         return self.bit_string_data
+
+    def __str__(self):
+        return self.bit_string_data.__str__()
+
+    def __repr__(self):
+        return self.bit_string_data.__repr__()

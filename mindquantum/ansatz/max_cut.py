@@ -76,23 +76,13 @@ class MaxCutAnsatz(Ansatz):
     Examples:
         >>> from mindquantum.ansatz import MaxCutAnsatz
         >>> graph = [(0, 1), (1, 2), (0, 2)]
-        >>> maxcut = MaxCutAnsatz(graph, 2)
+        >>> maxcut = MaxCutAnsatz(graph, 1)
         >>> maxcut.circuit
-        H(0)
-        H(1)
-        H(2)
-        ZZ(beta_0|0 1)
-        ZZ(beta_0|1 2)
-        ZZ(beta_0|0 2)
-        RX(alpha_0|0)
-        RX(alpha_0|1)
-        RX(alpha_0|2)
-        ZZ(beta_1|0 1)
-        ZZ(beta_1|1 2)
-        ZZ(beta_1|0 2)
-        RX(alpha_1|0)
-        RX(alpha_1|1)
-        RX(alpha_1|2)
+        q0: ──H────ZZ(beta_0)──────────────────ZZ(beta_0)────RX(alpha_0)──
+                       │                           │
+        q1: ──H────ZZ(beta_0)────ZZ(beta_0)────────┼─────────RX(alpha_0)──
+                                     │             │
+        q2: ──H──────────────────ZZ(beta_0)────ZZ(beta_0)────RX(alpha_0)──
 
         >>> maxcut.hamiltonian
         1.5 [] +

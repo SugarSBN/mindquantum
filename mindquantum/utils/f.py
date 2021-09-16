@@ -167,17 +167,27 @@ def _common_exp(num, round_n=None):
     """common expressions."""
     if num == 0:
         return num
-    com = {'π': np.pi, '√2': np.sqrt(2), '√3': np.sqrt(3), '√5': np.sqrt(5)}
+    com = {
+        '': 1,
+        'π': np.pi,
+        '√2': np.sqrt(2),
+        '√3': np.sqrt(3),
+        '√5': np.sqrt(5)
+    }
     for k, v in com.items():
-        left = str(fractions.Fraction(str(num / v)))
+        left = str(fractions.Fraction(round(num / v, 9)))
         if len(left) < 5 or '/' not in left or left.startswith(
                 '1/') or left.startswith('-1/'):
             tmp = left.split('/')
             if not (len(tmp) == 2 and int(tmp[1]) > 5 and int(tmp[0]) > 5):
                 if tmp[0] == '1':
                     tmp[0] = k
+                    if k == '':
+                        tmp[0] = '1'
                 elif tmp[0] == '-1':
                     tmp[0] = f"-{k}"
+                    if k == '':
+                        tmp[0] = '-1'
                 else:
                     tmp[0] = f"{tmp[0]}{k}"
                 return '/'.join(tmp)
@@ -203,6 +213,8 @@ def ket_string(state, tol=1e-7):
         √2/2¦0⟩
         -√2/2j¦1⟩
     """
+    if not isinstance(state, np.ndarray) or len(state.shape) != 1:
+        raise TypeError(f"state need a 1-D ndarray.")
     n = int(np.log2(len(state)))
     if len(state) < 2 and len(state) != (1 << n):
         raise ValueError("Invalid state size!")

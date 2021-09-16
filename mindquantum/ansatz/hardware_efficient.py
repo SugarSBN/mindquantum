@@ -66,20 +66,12 @@ class HardwareEfficientAnsatz(Ansatz):
         >>> from mindquantum import RY, RZ, Z
         >>> hea = HardwareEfficientAnsatz(3, [RY, RZ], Z, [(0, 1), (0, 2)])
         >>> hea.circuit
-        RY(d0_n0_0|0)
-        RZ(d0_n0_1|0)
-        RY(d0_n1_0|1)
-        RZ(d0_n1_1|1)
-        RY(d0_n2_0|2)
-        RZ(d0_n2_1|2)
-        Z(1 <-: 0)
-        Z(2 <-: 0)
-        RY(d1_n0_0|0)
-        RZ(d1_n0_1|0)
-        RY(d1_n1_0|1)
-        RZ(d1_n1_1|1)
-        RY(d1_n2_0|2)
-        RZ(d1_n2_1|2)
+        q0: ──RY(d0_n0_0)────RZ(d0_n0_1)────●────●────RY(d1_n0_0)────RZ(d1_n0_1)──
+                                            │    │
+        q1: ──RY(d0_n1_0)────RZ(d0_n1_1)────Z────┼────RY(d1_n1_0)────RZ(d1_n1_1)──
+                                                 │
+        q2: ──RY(d0_n2_0)────RZ(d0_n2_1)─────────Z────RY(d1_n2_0)────RZ(d1_n2_1)──
+
     """
     def __init__(self,
                  n_qubits,
@@ -120,7 +112,7 @@ class HardwareEfficientAnsatz(Ansatz):
                     res.append((i, i + 1))
                 return res
             raise ValueError("entangle_mapping can only be 'all', 'linear', \
-or a list of tuple of the qubits that the entanglement gate act on.")
+or a list of tuple of the qubits that the entanglement gate act on."                                                                                                                                        )
         if isinstance(entangle_mapping, list):
             for i in entangle_mapping:
                 if isinstance(i, tuple):
@@ -134,7 +126,7 @@ or a list of tuple of the qubits that the entanglement gate act on.")
                     )
         else:
             raise ValueError("entangle_mapping can only be 'all', 'linear', \
-or a list of tuple of the qubits that the entanglement gate act on.")
+or a list of tuple of the qubits that the entanglement gate act on."                                                                                                                                        )
         return entangle_mapping
 
     def _build_entangle(self, entangle_gate, entangle_mapping):
@@ -149,7 +141,7 @@ or a list of tuple of the qubits that the entanglement gate act on.")
             else:
                 raise ValueError(
                     f"Entangle gate can only be a controlled single qubit gate \
-or two qubits gate, but get {gate_qubit} qubits gate.")
+or two qubits gate, but get {gate_qubit} qubits gate."                                                                                                            )
         return circ
 
     def _build_single_rot(self, single_rot_gate_seq):

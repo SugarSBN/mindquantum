@@ -48,9 +48,9 @@ class TimeEvolution:
         >>> from mindquantum.ops import QubitOperator
         >>> h = QubitOperator('Z0 Z1', 'p')
         >>> TimeEvolution(h).circuit
-        X(1 <-: 0)
-        RZ(2*p|1)
-        X(1 <-: 0)
+        q0: ──●───────────────●──
+              │               │
+        q1: ──X────RZ(2*p)────X──
     """
     def __init__(self, ops: QubitOperator, time=None):
         if time is None:
