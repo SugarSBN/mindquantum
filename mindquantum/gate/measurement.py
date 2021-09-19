@@ -50,11 +50,18 @@ class Measure(NoneParameterGate):
         #TODO: 🔥🔥🔥🔥🔥《测量相关接口校验》↪️1.对比特位进行校验
         if ctrl_qubits is not None:
             raise ValueError("Measure gate can not have control qubit")
-        new_gate = Measure(self.key)
-        new_gate.obj_qubits = [obj_qubits]
-        if not new_gate.key:
-            new_gate.key = str(obj_qubits)
-        return new_gate
+        if obj_qubits is None:
+            raise ValueError("The object qubit of measurement can not be none")
+        if not isinstance(obj_qubits, int):
+            raise ValueError("The object qubit of measurement must be a \
+non-negative integer referring to its index number")
+        if obj_qubits < 0:
+            raise ValueError("The object qubit of measurement must be a \
+non-negative integer referring to its index number")
+        self.obj_qubits = [obj_qubits]
+        if not self.key:
+            self.key = str(obj_qubits)
+        return self
 
     def __hash__(self):
         return hash(self.key)
@@ -66,7 +73,7 @@ class Measure(NoneParameterGate):
 
     def hermitian(self):
         """Hermitian gate of measure return its self"""
-        return self.__class__(self.key).on(self.obj_qubits[0])
+        return self.__class__(self.name).on(self.obj_qubits[0])
 
     def check_obj_qubits(self):
         if not self.obj_qubits:
@@ -93,6 +100,10 @@ class MeasureResult:
         if not isinstance(measure, Iterable):
             measure = [measure]
         for m in measure:
+            if not isinstance(m, Measure):
+                raise ValueError("Measurement gates need to \
+be objects of class 'Measurement' ")
+        for m in measure:
             if m.key in self.keys:
                 raise ValueError(f"Measure key {m.key} already defined.")
             self.measures.append(m)
@@ -118,9 +129,3 @@ class MeasureResult:
     @property
     def data(self):
         return self.bit_string_data
-
-    def __str__(self):
-        return self.bit_string_data.__str__()
-
-    def __repr__(self):
-        return self.bit_string_data.__repr__()
